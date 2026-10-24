@@ -52,7 +52,7 @@
       <i data-lucide="wrench" class="w-10 h-10"></i>
     </div>
     <h1 class="text-2xl md:text-3xl font-black text-gray-900 mb-2">BHALLEGAON - BAGWAN BAZAAR</h1>
-    <p class="text-gray-600 max-w-md text-sm">Website abhi maintenance me hai. Hum jald hi wapas public honge!</p>
+    <p class="text-gray-600 max-w-md text-sm" data-i18n="maint_text">Website abhi maintenance me hai. Hum jald hi wapas public honge!</p>
     <div class="mt-8">
       <button onclick="openAdminModal()" class="text-xs text-gray-400 hover:text-gray-600 underline">Admin Login</button>
     </div>
@@ -68,13 +68,21 @@
           <p class="text-[10px] font-bold text-yellow-200">BAGWAN BAZAAR</p>
         </div>
       </div>
-      <div class="flex items-center space-x-3">
+
+      <div class="flex items-center space-x-2 sm:space-x-3">
+        <!-- Language Selector -->
+        <select id="langSelect" onchange="changeLanguage(this.value)" class="bg-orange-800/60 text-white text-xs font-bold px-2 py-1 rounded-full outline-none border border-orange-400/40 cursor-pointer">
+          <option value="en">English</option>
+          <option value="hi">हिंदी</option>
+        </select>
+
         <button onclick="navigateTab('cart')" class="relative p-2 rounded-full hover:bg-orange-600 transition">
           <i data-lucide="shopping-cart" class="w-5 h-5"></i>
           <span id="cartCountBadge" class="hidden absolute top-0 right-0 bg-green-500 text-white font-bold text-[10px] rounded-full w-4 h-4 flex items-center justify-center">0</span>
         </button>
+
         <div id="headerAuthNav">
-          <button onclick="openAuthModal()" class="bg-white text-brand-deepOrange px-3 py-1 rounded-full font-bold text-xs shadow hover:bg-yellow-100 transition">
+          <button onclick="openAuthModal()" class="bg-white text-brand-deepOrange px-3 py-1 rounded-full font-bold text-xs shadow hover:bg-yellow-100 transition" data-i18n="login_reg">
             Login / Register
           </button>
         </div>
@@ -86,19 +94,19 @@
   <nav class="bg-white border-b sticky top-14 z-30 shadow-sm">
     <div class="max-w-6xl mx-auto px-4 flex justify-around">
       <button onclick="navigateTab('home')" class="nav-btn py-3 text-xs md:text-sm font-bold border-b-2 border-brand-orange text-brand-orange flex items-center gap-1" id="tabHome">
-        <i data-lucide="home" class="w-4 h-4"></i> Home
+        <i data-lucide="home" class="w-4 h-4"></i> <span data-i18n="nav_home">Home</span>
       </button>
       <button onclick="navigateTab('shops')" class="nav-btn py-3 text-xs md:text-sm font-semibold text-gray-500 hover:text-brand-orange border-b-2 border-transparent flex items-center gap-1" id="tabShops">
-        <i data-lucide="store" class="w-4 h-4"></i> Shops
+        <i data-lucide="store" class="w-4 h-4"></i> <span data-i18n="nav_shops">Shops</span>
       </button>
       <button onclick="navigateTab('orders')" class="nav-btn py-3 text-xs md:text-sm font-semibold text-gray-500 hover:text-brand-orange border-b-2 border-transparent flex items-center gap-1" id="tabOrders">
-        <i data-lucide="receipt" class="w-4 h-4"></i> My Orders
+        <i data-lucide="receipt" class="w-4 h-4"></i> <span data-i18n="nav_orders">My Orders</span>
       </button>
       <button onclick="navigateTab('account')" class="nav-btn py-3 text-xs md:text-sm font-semibold text-gray-500 hover:text-brand-orange border-b-2 border-transparent flex items-center gap-1" id="tabAccount">
-        <i data-lucide="user" class="w-4 h-4"></i> Account
+        <i data-lucide="user" class="w-4 h-4"></i> <span data-i18n="nav_account">Account</span>
       </button>
       <button onclick="navigateTab('seller')" id="sellerTabBtn" class="hidden nav-btn py-3 text-xs md:text-sm font-semibold text-gray-500 hover:text-brand-orange border-b-2 border-transparent flex items-center gap-1">
-        <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Dukan Dashboard
+        <i data-lucide="layout-dashboard" class="w-4 h-4"></i> <span data-i18n="nav_seller">Dukan Dashboard</span>
       </button>
     </div>
   </nav>
@@ -115,7 +123,7 @@
         </div>
         <div class="bg-yellow-100 border border-yellow-300 text-yellow-800 text-xs px-3.5 py-2 rounded-xl flex items-center gap-2 shadow-sm w-full md:w-auto">
           <i data-lucide="clock" class="w-4 h-4 flex-shrink-0"></i>
-          <span>Min. Order: <b>₹100</b> | Shaam <b>6:00 PM</b> se pehle saman collect karein.</span>
+          <span data-i18n="home_order_note">Min. Order: <b>₹100</b> | Shaam <b>6:00 PM</b> se pehle saman collect karein.</span>
         </div>
       </div>
 
@@ -135,7 +143,7 @@
     <!-- SHOPS TAB -->
     <section id="viewShops" class="hidden">
       <h2 class="text-base font-black mb-4 flex items-center gap-2">
-        <i data-lucide="store" class="text-brand-orange"></i> Bhallegaon Ki Dukaanein
+        <i data-lucide="store" class="text-brand-orange"></i> <span data-i18n="shops_title">Bhallegaon Ki Dukaanein</span>
       </h2>
       <div id="shopsListContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
     </section>
@@ -144,9 +152,9 @@
     <section id="viewCart" class="hidden">
       <div class="flex justify-between items-center mb-4">
         <h2 class="text-base font-black flex items-center gap-2">
-          <i data-lucide="shopping-cart" class="text-brand-orange"></i> Aapka Bazaar Bag
+          <i data-lucide="shopping-cart" class="text-brand-orange"></i> <span data-i18n="cart_title">Aapka Bazaar Bag</span>
         </h2>
-        <span class="text-xs bg-orange-100 text-brand-deepOrange font-bold px-2.5 py-1 rounded-full">Min. Order: ₹100 per shop</span>
+        <span class="text-xs bg-orange-100 text-brand-deepOrange font-bold px-2.5 py-1 rounded-full" data-i18n="cart_min_badge">Min. Order: ₹100 per shop</span>
       </div>
       <div id="cartContentWrapper" class="space-y-6"></div>
     </section>
@@ -154,7 +162,7 @@
     <!-- ORDERS TAB -->
     <section id="viewOrders" class="hidden">
       <h2 class="text-base font-black mb-4 flex items-center gap-2">
-        <i data-lucide="receipt" class="text-brand-orange"></i> Mere Orders & 6-Digit Pickup Codes
+        <i data-lucide="receipt" class="text-brand-orange"></i> <span data-i18n="orders_title">Mere Orders & 6-Digit Pickup Codes</span>
       </h2>
       <div id="customerOrdersContainer" class="space-y-4"></div>
     </section>
@@ -174,25 +182,25 @@
             <h3 id="accName" class="font-extrabold text-base text-gray-900">Name</h3>
             <p id="accPhone" class="text-xs text-gray-500">Phone</p>
             <span id="accRoleBadge" class="inline-block mt-1 px-2.5 py-0.5 rounded text-[10px] font-bold uppercase bg-orange-100 text-brand-orange">Role</span>
-            <p class="text-[10px] text-gray-400 mt-1">Camera icon par tap karke photo badlein</p>
+            <p class="text-[10px] text-gray-400 mt-1" data-i18n="acc_photo_hint">Camera icon par tap karke photo badlein</p>
           </div>
         </div>
         <form onsubmit="handleProfileUpdate(event)" class="space-y-3">
           <div>
-            <label class="block text-xs font-bold text-gray-700 mb-1">Poora Naam</label>
+            <label class="block text-xs font-bold text-gray-700 mb-1" data-i18n="lbl_name">Poora Naam</label>
             <input type="text" id="accEditName" class="w-full p-2 border rounded-lg text-xs" required />
           </div>
           <div>
-            <label class="block text-xs font-bold text-gray-700 mb-1">Email</label>
+            <label class="block text-xs font-bold text-gray-700 mb-1" data-i18n="lbl_email">Email</label>
             <input type="email" id="accEditEmail" class="w-full p-2 border rounded-lg text-xs" />
           </div>
           <div>
-            <label class="block text-xs font-bold text-gray-700 mb-1">Address</label>
+            <label class="block text-xs font-bold text-gray-700 mb-1" data-i18n="lbl_address">Address</label>
             <textarea id="accEditAddress" rows="2" class="w-full p-2 border rounded-lg text-xs" required></textarea>
           </div>
-          <button type="submit" class="w-full bg-brand-orange text-white py-2 rounded-xl font-bold text-xs shadow hover:bg-orange-600 transition">Profile Update Karein</button>
+          <button type="submit" class="w-full bg-brand-orange text-white py-2 rounded-xl font-bold text-xs shadow hover:bg-orange-600 transition" data-i18n="btn_update_profile">Profile Update Karein</button>
         </form>
-        <button onclick="handleLogout()" class="mt-4 w-full text-center text-xs text-red-500 font-bold hover:underline">Logout</button>
+        <button onclick="handleLogout()" class="mt-4 w-full text-center text-xs text-red-500 font-bold hover:underline" data-i18n="btn_logout">Logout</button>
       </div>
     </section>
 
@@ -211,7 +219,7 @@
             </button>
           </div>
           <button onclick="openAddProductModal()" class="bg-brand-green text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 shadow hover:bg-green-700 transition">
-            <i data-lucide="plus-circle" class="w-4 h-4"></i> Naya Item Jodein
+            <i data-lucide="plus-circle" class="w-4 h-4"></i> <span data-i18n="btn_add_item">Naya Item Jodein</span>
           </button>
         </div>
       </div>
@@ -219,56 +227,56 @@
       <!-- Tip -->
       <div class="bg-amber-50 border border-amber-200 text-amber-800 text-xs p-3 rounded-2xl mb-4 flex items-center gap-2.5 shadow-sm">
         <i data-lucide="pen-tool" class="w-5 h-5 text-amber-600 flex-shrink-0"></i>
-        <span><b>Dukaandaar Tip (No Printer Needed):</b> Saman pack karke thele par marker pen se bada-bada <b>Customer Name</b> aur <b>6-Digit Code</b> likh dein.</span>
+        <span data-i18n="seller_tip"><b>Dukaandaar Tip (No Printer Needed):</b> Saman pack karke thele par marker pen se bada-bada <b>Customer Name</b> aur <b>6-Digit Code</b> likh dein.</span>
       </div>
 
       <!-- Seller Analytics & Admin Due Card -->
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
         <div class="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 p-3.5 rounded-2xl shadow-sm">
           <div class="flex justify-between items-center text-green-700 text-xs font-bold mb-1">
-            <span>Aaj Ki Kul Sale (Today)</span>
+            <span data-i18n="stat_today">Aaj Ki Kul Sale (Today)</span>
             <i data-lucide="calendar" class="w-4 h-4"></i>
           </div>
           <p id="sellerTodaySale" class="text-xl font-black text-green-900">₹0</p>
-          <span class="text-[10px] text-green-600">Delivered orders ka sum</span>
+          <span class="text-[10px] text-green-600" data-i18n="stat_today_desc">Delivered orders ka sum</span>
         </div>
 
         <div class="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 p-3.5 rounded-2xl shadow-sm">
           <div class="flex justify-between items-center text-blue-700 text-xs font-bold mb-1">
-            <span>Is Mahine Ki Sale (Month)</span>
+            <span data-i18n="stat_month">Is Mahine Ki Sale (Month)</span>
             <i data-lucide="trending-up" class="w-4 h-4"></i>
           </div>
           <p id="sellerMonthSale" class="text-xl font-black text-blue-900">₹0</p>
-          <span class="text-[10px] text-blue-600">Current calendar month</span>
+          <span class="text-[10px] text-blue-600" data-i18n="stat_month_desc">Current calendar month</span>
         </div>
 
         <div class="bg-gradient-to-br from-red-50 to-red-100 border border-red-200 p-3.5 rounded-2xl shadow-sm">
           <div class="flex justify-between items-center text-red-700 text-xs font-bold mb-1">
-            <span>Admin Ko Dene Hain (2%)</span>
+            <span data-i18n="stat_admin_due">Admin Ko Dene Hain (2%)</span>
             <i data-lucide="wallet" class="w-4 h-4"></i>
           </div>
           <p id="sellerAdminDue" class="text-xl font-black text-red-800">₹0</p>
-          <span class="text-[10px] text-red-600">≥ ₹150 ke orders par 2% fee (Below ₹150: Free)</span>
+          <span class="text-[10px] text-red-600" data-i18n="stat_admin_due_desc">≥ ₹150 ke orders par 2% fee (Below ₹150: Free)</span>
         </div>
       </div>
 
       <!-- Tabular format orders for Seller -->
       <h3 class="text-sm font-black text-gray-800 mb-3 flex items-center gap-1">
-        <i data-lucide="list-ordered" class="w-4 h-4 text-brand-orange"></i> Live Customer Orders (Table)
+        <i data-lucide="list-ordered" class="w-4 h-4 text-brand-orange"></i> <span data-i18n="seller_orders_heading">Live Customer Orders (Table)</span>
       </h3>
       <div class="bg-white rounded-xl shadow border overflow-x-auto mb-8">
         <table class="w-full text-left text-xs border-collapse min-w-[850px]">
           <thead class="bg-gray-100 uppercase text-gray-600 border-b">
             <tr>
-              <th class="p-3">6-Digit Code</th>
-              <th class="p-3">Customer</th>
-              <th class="p-3">Phone</th>
-              <th class="p-3">Address</th>
-              <th class="p-3">Items & Quantity</th>
-              <th class="p-3">Order Amount</th>
-              <th class="p-3">Admin Fee (2%)</th>
-              <th class="p-3">Current Status</th>
-              <th class="p-3 text-center">Action / Update</th>
+              <th class="p-3" data-i18n="th_code">6-Digit Code</th>
+              <th class="p-3" data-i18n="th_customer">Customer</th>
+              <th class="p-3" data-i18n="th_phone">Phone</th>
+              <th class="p-3" data-i18n="th_address">Address</th>
+              <th class="p-3" data-i18n="th_items">Items & Quantity</th>
+              <th class="p-3" data-i18n="th_amount">Order Amount</th>
+              <th class="p-3" data-i18n="th_fee">Admin Fee (2%)</th>
+              <th class="p-3" data-i18n="th_status">Current Status</th>
+              <th class="p-3 text-center" data-i18n="th_action">Action / Update</th>
             </tr>
           </thead>
           <tbody id="sellerOrdersTableBody" class="divide-y divide-gray-100"></tbody>
@@ -276,7 +284,7 @@
       </div>
 
       <!-- Seller Products List -->
-      <h3 class="text-sm font-black text-gray-800 mb-3">Dukan Par Maujood Items</h3>
+      <h3 class="text-sm font-black text-gray-800 mb-3" data-i18n="seller_prods_heading">Dukan Par Maujood Items</h3>
       <div id="sellerProductsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"></div>
     </section>
 
@@ -332,55 +340,55 @@
     <div class="bg-white rounded-2xl w-full max-w-sm p-5 shadow-2xl relative">
       <button onclick="closeAuthModal()" class="absolute right-4 top-4 text-gray-400 hover:text-gray-600"><i data-lucide="x" class="w-5 h-5"></i></button>
       <div class="flex justify-center border-b mb-3">
-        <button id="authTabLogin" onclick="switchAuthTab('login')" class="pb-2 px-4 font-bold text-xs border-b-2 border-brand-orange text-brand-orange">Login</button>
-        <button id="authTabRegister" onclick="switchAuthTab('register')" class="pb-2 px-4 font-bold text-xs text-gray-400 border-b-2 border-transparent">Register</button>
+        <button id="authTabLogin" onclick="switchAuthTab('login')" class="pb-2 px-4 font-bold text-xs border-b-2 border-brand-orange text-brand-orange" data-i18n="tab_login">Login</button>
+        <button id="authTabRegister" onclick="switchAuthTab('register')" class="pb-2 px-4 font-bold text-xs text-gray-400 border-b-2 border-transparent" data-i18n="tab_register">Register</button>
       </div>
 
       <!-- Login -->
       <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-3">
         <div>
-          <label class="block text-xs font-bold text-gray-700 mb-1">Phone Number</label>
+          <label class="block text-xs font-bold text-gray-700 mb-1" data-i18n="lbl_phone">Phone Number</label>
           <input type="tel" id="loginPhone" placeholder="10-digit number" class="w-full p-2 border rounded-lg text-xs" required />
         </div>
-        <button type="submit" class="w-full bg-brand-orange text-white py-2 rounded-xl font-bold text-xs shadow hover:bg-orange-600 transition">Login</button>
+        <button type="submit" class="w-full bg-brand-orange text-white py-2 rounded-xl font-bold text-xs shadow hover:bg-orange-600 transition" data-i18n="tab_login">Login</button>
       </form>
 
       <!-- Register -->
       <form id="registerForm" onsubmit="handleRegister(event)" class="hidden space-y-2.5">
         <div>
-          <label class="block text-[11px] font-bold text-gray-700 mb-0.5">Profile Photo (Mandatory)</label>
+          <label class="block text-[11px] font-bold text-gray-700 mb-0.5" data-i18n="lbl_photo">Profile Photo (Mandatory)</label>
           <input type="file" id="regProfilePic" accept="image/*" class="w-full text-xs" required />
         </div>
         <div>
-          <label class="block text-[11px] font-bold text-gray-700 mb-0.5">Account Type</label>
+          <label class="block text-[11px] font-bold text-gray-700 mb-0.5" data-i18n="lbl_acc_type">Account Type</label>
           <select id="regRole" onchange="toggleShopRegisterField()" class="w-full p-1.5 border rounded-lg text-xs font-medium">
-            <option value="customer">Customer (Khariddar)</option>
-            <option value="shopkeeper">Shopkeeper (Dukaandaar)</option>
+            <option value="customer" data-i18n="opt_customer">Customer (Khariddar)</option>
+            <option value="shopkeeper" data-i18n="opt_seller">Shopkeeper (Dukaandaar)</option>
           </select>
         </div>
         <div id="regShopNameField" class="hidden">
-          <label class="block text-[11px] font-bold text-gray-700 mb-0.5">Dukaan Ka Naam</label>
+          <label class="block text-[11px] font-bold text-gray-700 mb-0.5" data-i18n="lbl_shop_name">Dukaan Ka Naam</label>
           <input type="text" id="regShopName" placeholder="e.g. Ramesh Kirana Store" class="w-full p-1.5 border rounded-lg text-xs" />
         </div>
         <div>
-          <label class="block text-[11px] font-bold text-gray-700 mb-0.5">Poora Naam</label>
+          <label class="block text-[11px] font-bold text-gray-700 mb-0.5" data-i18n="lbl_name">Poora Naam</label>
           <input type="text" id="regName" class="w-full p-1.5 border rounded-lg text-xs" required />
         </div>
         <div class="grid grid-cols-2 gap-2">
           <div>
-            <label class="block text-[11px] font-bold text-gray-700 mb-0.5">Phone</label>
+            <label class="block text-[11px] font-bold text-gray-700 mb-0.5" data-i18n="lbl_phone">Phone</label>
             <input type="tel" id="regPhone" class="w-full p-1.5 border rounded-lg text-xs" required />
           </div>
           <div>
-            <label class="block text-[11px] font-bold text-gray-700 mb-0.5">Email</label>
+            <label class="block text-[11px] font-bold text-gray-700 mb-0.5" data-i18n="lbl_email">Email</label>
             <input type="email" id="regEmail" class="w-full p-1.5 border rounded-lg text-xs" />
           </div>
         </div>
         <div>
-          <label class="block text-[11px] font-bold text-gray-700 mb-0.5">Address</label>
+          <label class="block text-[11px] font-bold text-gray-700 mb-0.5" data-i18n="lbl_address">Address</label>
           <textarea id="regAddress" rows="2" class="w-full p-1.5 border rounded-lg text-xs" required></textarea>
         </div>
-        <button type="submit" class="w-full bg-brand-green text-white py-2 rounded-xl font-bold text-xs shadow hover:bg-green-700 transition">Register</button>
+        <button type="submit" class="w-full bg-brand-green text-white py-2 rounded-xl font-bold text-xs shadow hover:bg-green-700 transition" data-i18n="tab_register">Register</button>
       </form>
     </div>
   </div>
@@ -389,14 +397,14 @@
   <div id="addProductModal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl w-full max-w-sm p-5 shadow-2xl relative max-h-[90vh] overflow-y-auto">
       <button onclick="closeAddProductModal()" class="absolute right-4 top-4 text-gray-400 hover:text-gray-600"><i data-lucide="x" class="w-5 h-5"></i></button>
-      <h3 class="text-sm font-black text-gray-900 mb-3">Item Dukaan Me Jodein</h3>
+      <h3 class="text-sm font-black text-gray-900 mb-3" data-i18n="add_prod_modal_title">Item Dukaan Me Jodein</h3>
       <form onsubmit="handleProductSubmit(event)" class="space-y-2.5">
         <div>
-          <label class="block text-[11px] font-bold text-gray-700 mb-0.5">Item Ka Naam</label>
+          <label class="block text-[11px] font-bold text-gray-700 mb-0.5" data-i18n="lbl_item_name">Item Ka Naam</label>
           <input type="text" id="pTitle" placeholder="e.g. Arhar Daal ya Mustard Oil" class="w-full p-1.5 border rounded-lg text-xs" required />
         </div>
         <div>
-          <label class="block text-[11px] font-bold text-gray-700 mb-0.5">Packaging Type</label>
+          <label class="block text-[11px] font-bold text-gray-700 mb-0.5" data-i18n="lbl_packaging">Packaging Type</label>
           <select id="pUnitType" class="w-full p-1.5 border rounded-lg text-xs font-medium" onchange="adjustPriceLabel()">
             <option value="packet">Packed Item (Pouch / Packet / Bottle)</option>
             <option value="weight">Loose / Khula Item (Sold by kg)</option>
@@ -412,10 +420,10 @@
           <p class="text-[9px] text-gray-400">1 se 4 photo select kar sakte hain.</p>
         </div>
         <div>
-          <label class="block text-[11px] font-bold text-gray-700 mb-0.5">Description</label>
+          <label class="block text-[11px] font-bold text-gray-700 mb-0.5" data-i18n="lbl_desc">Description</label>
           <textarea id="pDesc" rows="2" class="w-full p-1.5 border rounded-lg text-xs"></textarea>
         </div>
-        <button type="submit" class="w-full bg-brand-orange text-white py-2 rounded-xl font-bold text-xs shadow hover:bg-orange-600 transition">Publish Item</button>
+        <button type="submit" class="w-full bg-brand-orange text-white py-2 rounded-xl font-bold text-xs shadow hover:bg-orange-600 transition" data-i18n="btn_publish_item">Publish Item</button>
       </form>
     </div>
   </div>
@@ -715,6 +723,154 @@
 
   <!-- ================= JAVASCRIPT ENGINE ================= -->
   <script>
+    // --- MULTILINGUAL DICTIONARY ---
+    let currentLang = localStorage.getItem('bb_lang') || 'en';
+    const translations = {
+      en: {
+        maint_text: "Website abhi maintenance me hai. Hum jald hi wapas public honge!",
+        login_reg: "Login / Register",
+        nav_home: "Home",
+        nav_shops: "Shops",
+        nav_orders: "My Orders",
+        nav_account: "Account",
+        nav_seller: "Dukan Dashboard",
+        home_order_note: "Min. Order: <b>₹100</b> | Shaam <b>6:00 PM</b> se pehle saman collect karein.",
+        shops_title: "Bhallegaon Ki Dukaanein",
+        cart_title: "Aapka Bazaar Bag",
+        cart_min_badge: "Min. Order: ₹100 per shop",
+        orders_title: "Mere Orders & 6-Digit Pickup Codes",
+        acc_photo_hint: "Camera icon par tap karke photo badlein",
+        lbl_name: "Poora Naam",
+        lbl_email: "Email",
+        lbl_address: "Address",
+        btn_update_profile: "Profile Update Karein",
+        btn_logout: "Logout",
+        btn_add_item: "Naya Item Jodein",
+        seller_tip: "<b>Dukaandaar Tip (No Printer Needed):</b> Saman pack karke thele par marker pen se bada-bada <b>Customer Name</b> aur <b>6-Digit Code</b> likh dein.",
+        stat_today: "Aaj Ki Kul Sale (Today)",
+        stat_today_desc: "Delivered orders ka sum",
+        stat_month: "Is Mahine Ki Sale (Month)",
+        stat_month_desc: "Current calendar month",
+        stat_admin_due: "Admin Ko Dene Hain (2%)",
+        stat_admin_due_desc: "≥ ₹150 ke orders par 2% fee (Below ₹150: Free)",
+        seller_orders_heading: "Live Customer Orders (Table)",
+        th_code: "6-Digit Code",
+        th_customer: "Customer",
+        th_phone: "Phone",
+        th_address: "Address",
+        th_items: "Items & Quantity",
+        th_amount: "Order Amount",
+        th_fee: "Admin Fee (2%)",
+        th_status: "Current Status",
+        th_action: "Action / Update",
+        seller_prods_heading: "Dukan Par Maujood Items",
+        tab_login: "Login",
+        tab_register: "Register",
+        lbl_phone: "Phone Number",
+        lbl_photo: "Profile Photo (Mandatory)",
+        lbl_acc_type: "Account Type",
+        opt_customer: "Customer (Khariddar)",
+        opt_seller: "Shopkeeper (Dukaandaar)",
+        lbl_shop_name: "Dukaan Ka Naam",
+        add_prod_modal_title: "Item Dukaan Me Jodein",
+        lbl_item_name: "Item Ka Naam",
+        lbl_packaging: "Packaging Type",
+        lbl_desc: "Description",
+        btn_publish_item: "Publish Item",
+        search_ph: "Item ya dukan ka naam khojein...",
+        btn_add_cart: "Add to Cart",
+        btn_shop_closed: "Dukan Band Hai",
+        empty_items: "Koi item nahi mila.",
+        empty_cart: "Aapka bag khali hai. Home page se item add karein.",
+        btn_order_confirm: "Order Confirm Karein",
+        btn_view_items: "Dukan Ke Items Dekhein",
+        empty_seller_orders: "Abhi koi order nahi aaya hai."
+      },
+      hi: {
+        maint_text: "वेबसाइट अभी रखरखाव (Maintenance) में है। हम जल्द ही वापस लाइव होंगे!",
+        login_reg: "लॉगिन / रजिस्टर",
+        nav_home: "होम",
+        nav_shops: "दुकानें",
+        nav_orders: "मेरे ऑर्डर्स",
+        nav_account: "अकाउंट",
+        nav_seller: "दुकान डैशबोर्ड",
+        home_order_note: "न्यूनतम ऑर्डर: <b>₹100</b> | शाम <b>6:00 PM</b> से पहले सामान कलेक्ट करें।",
+        shops_title: "भल्लेगांव की दुकानें",
+        cart_title: "आपकी खरीदारी की थैली (Bag)",
+        cart_min_badge: "न्यूनतम ऑर्डर: ₹100 प्रति दुकान",
+        orders_title: "मेरे ऑर्डर्स और 6-अंकों का पिकअप कोड",
+        acc_photo_hint: "कैमरा आइकन पर टैप करके फोटो बदलें",
+        lbl_name: "पूरा नाम",
+        lbl_email: "ईमेल",
+        lbl_address: "पता (Address)",
+        btn_update_profile: "प्रोफाइल अपडेट करें",
+        btn_logout: "लॉगआउट",
+        btn_add_item: "नया आइटम जोड़ें",
+        seller_tip: "<b>दुकानदार टिप (प्रिंटर की जरूरत नहीं):</b> सामान पैक करके थैले पर मार्कर पेन से बड़ा-बड़ा <b>ग्राहक का नाम</b> और <b>6-अंकों का कोड</b> लिख दें।",
+        stat_today: "आज की कुल बिक्री (Today)",
+        stat_today_desc: "डिलिवर किए गए ऑर्डर्स का कुल जोड़",
+        stat_month: "इस महीने की बिक्री (Month)",
+        stat_month_desc: "वर्तमान कैलेंडर माह",
+        stat_admin_due: "एडमिन को देय राशि (2%)",
+        stat_admin_due_desc: "≥ ₹150 के ऑर्डर्स पर 2% शुल्क (₹150 से कम: मुफ़्त)",
+        seller_orders_heading: "लाइव ग्राहक ऑर्डर्स (तालिका)",
+        th_code: "6-अंकों का कोड",
+        th_customer: "ग्राहक",
+        th_phone: "फोन",
+        th_address: "पता",
+        th_items: "सामान और मात्रा",
+        th_amount: "ऑर्डर राशि",
+        th_fee: "एडमिन शुल्क (2%)",
+        th_status: "वर्तमान स्थिति",
+        th_action: "कार्रवाई / अपडेट",
+        seller_prods_heading: "दुकान में उपलब्ध आइटम",
+        tab_login: "लॉगिन",
+        tab_register: "पंजीकरण (Register)",
+        lbl_phone: "मोबाइल नंबर",
+        lbl_photo: "प्रोफाइल फोटो (अनिवार्य)",
+        lbl_acc_type: "खाते का प्रकार",
+        opt_customer: "ग्राहक (खरीदार)",
+        opt_seller: "दुकानदार",
+        lbl_shop_name: "दुकान का नाम",
+        add_prod_modal_title: "दुकान में सामान जोड़ें",
+        lbl_item_name: "आइटम का नाम",
+        lbl_packaging: "पैकेजिंग का प्रकार",
+        lbl_desc: "विवरण (Description)",
+        btn_publish_item: "सामान प्रकाशित करें",
+        search_ph: "सामान या दुकान का नाम खोजें...",
+        btn_add_cart: "थैले में जोड़ें",
+        btn_shop_closed: "दुकान बंद है",
+        empty_items: "कोई सामान नहीं मिला।",
+        empty_cart: "आपकी थैली खाली है। होम पेज से सामान जोड़ें।",
+        btn_order_confirm: "ऑर्डर कन्फर्म करें",
+        btn_view_items: "दुकान के सामान देखें",
+        empty_seller_orders: "अभी कोई ऑर्डर नहीं आया है।"
+      }
+    };
+
+    function changeLanguage(lang) {
+      currentLang = lang;
+      localStorage.setItem('bb_lang', lang);
+      applyTranslations();
+      renderProducts(products);
+      renderShops(shops);
+      if (document.getElementById('viewCart').classList.contains('hidden') === false) renderCart();
+      if (currentUser && currentUser.role === 'customer') loadCustomerOrders();
+      if (currentUser && currentUser.role === 'shopkeeper') loadSellerDashboard();
+    }
+
+    function applyTranslations() {
+      const dict = translations[currentLang] || translations.en;
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (dict[key]) el.innerHTML = dict[key];
+      });
+      const searchBox = document.getElementById('searchInput');
+      if (searchBox && dict.search_ph) searchBox.placeholder = dict.search_ph;
+      const langSel = document.getElementById('langSelect');
+      if (langSel) langSel.value = currentLang;
+    }
+
     // --- 1. FIREBASE INITIALIZATION ---
     const firebaseConfig = {
       apiKey: "AIzaSyDCw6vF1BwYp8K1K13TTmg8pT5W5G7NGjk",
@@ -728,7 +884,6 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    // Helper: De-duplicate arrays by key (id)
     function mergeUniqueById(existingArr, newArr) {
       const map = new Map();
       existingArr.forEach(item => { if (item && item.id) map.set(String(item.id), item); });
@@ -736,7 +891,6 @@
       return Array.from(map.values());
     }
 
-    // Helper: Normalize phone numbers (strips country code, spaces, dashes)
     function normalizePhone(p) {
       if (!p) return '';
       let s = String(p).trim().replace(/\D/g, '');
@@ -744,85 +898,18 @@
       return s.slice(-10);
     }
 
-    // State Management
+    // State Management - Completely Fresh & Clean (No Hardcoded Dummy Shops/Items)
     let appSettings = JSON.parse(localStorage.getItem('bb_settings')) || { maintenanceMode: false, showSellerPhone: true };
-    let users = JSON.parse(localStorage.getItem('bb_users')) || [
-      {
-        id: 'usr-1',
-        name: 'Ramesh Bagwan',
-        phone: '9876543210',
-        email: 'ramesh@bhallegaon.in',
-        address: 'Main Market, Bhallegaon',
-        profilePic: 'https://images.unsplash.com/photo-1544717305-2782549b5136?w=200',
-        role: 'shopkeeper',
-        shopId: 'shop-1'
-      },
-      {
-        id: 'usr-demo-cust',
-        name: 'Suresh Negi',
-        phone: '9897123456',
-        email: 'suresh@gmail.com',
-        address: 'Ward No 2, Near Water Tank, Bhallegaon',
-        profilePic: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200',
-        role: 'customer',
-        shopId: null
-      }
-    ];
-    let shops = JSON.parse(localStorage.getItem('bb_shops')) || [
-      {
-        id: 'shop-1',
-        ownerId: 'usr-1',
-        shopName: 'Bagwan Kirana Store',
-        phone: '9876543210',
-        address: 'Shop No. 5, Main Market, Bhallegaon',
-        isOpen: true
-      }
-    ];
-    let products = JSON.parse(localStorage.getItem('bb_products')) || [
-      {
-        id: 'p-1',
-        shopId: 'shop-1',
-        title: 'Desi Shuddh Arhar Daal',
-        description: 'Ghar ki kheti ki unpolished fresh daal.',
-        unitType: 'weight',
-        pricePerKg: 140,
-        pricePerUnit: null,
-        images: ['https://images.unsplash.com/photo-1585994192701-f1a505c817ea?w=500']
-      },
-      {
-        id: 'p-2',
-        shopId: 'shop-1',
-        title: 'Fortune Mustard Oil Pouch (1L)',
-        description: 'Pure kacchi ghani mustard oil packet.',
-        unitType: 'packet',
-        pricePerUnit: 135,
-        pricePerKg: null,
-        images: ['https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=500']
-      }
-    ];
+    let users = JSON.parse(localStorage.getItem('bb_users')) || [];
+    let shops = JSON.parse(localStorage.getItem('bb_shops')) || [];
+    let products = JSON.parse(localStorage.getItem('bb_products')) || [];
     let orders = JSON.parse(localStorage.getItem('bb_orders')) || [];
-    let adBanners = JSON.parse(localStorage.getItem('bb_ad_banners')) || [
-      {
-        id: 'ban-1',
-        sponsor: 'Bagwan Kirana Store',
-        phone: '9876543210',
-        title: 'Bagwan Kirana - Shuddh Desi Daal Offer',
-        subtitle: '100% Taaza kheti ki daal par best rates!',
-        img: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=1200',
-        shopId: 'shop-1',
-        days: 3,
-        totalCharge: 900,
-        startDate: new Date().toISOString(),
-        endDate: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate() + 3, 23, 59, 59).toISOString(),
-        isManuallyHidden: false
-      }
-    ];
+    let adBanners = JSON.parse(localStorage.getItem('bb_ad_banners')) || [];
 
     let currentUser = JSON.parse(localStorage.getItem('bb_current_user')) || null;
     let cart = JSON.parse(localStorage.getItem('bb_cart')) || [];
     let adminToken = false;
     
-    // 8-second slider state & zoom state
     let currentBannerIndex = 0;
     let bannerSliderTimer = null;
     let isBannerPaused = false;
@@ -855,7 +942,7 @@
 
     // --- FIRESTORE REALTIME SYNC ENGINE ---
     function initFirestoreLiveSync() {
-      // 1. Settings Sync
+      // 1. Settings
       db.collection("settings").doc("appSettings").onSnapshot(doc => {
         if (doc.exists) {
           appSettings = doc.data();
@@ -868,7 +955,7 @@
         }
       }, err => console.log("Settings sync:", err));
 
-      // 2. Users Sync (De-duplicate)
+      // 2. Users
       db.collection("users").onSnapshot(snap => {
         if (!snap.empty) {
           const list = [];
@@ -886,12 +973,10 @@
             }
           }
           if (adminToken) renderAdminDashboard();
-        } else if (users.length > 0) {
-          users.forEach(u => db.collection("users").doc(String(u.id)).set(u));
         }
       }, err => console.log("Users sync:", err));
 
-      // 3. Shops Sync (De-duplicate)
+      // 3. Shops
       db.collection("shops").onSnapshot(snap => {
         if (!snap.empty) {
           const list = [];
@@ -902,12 +987,10 @@
           renderProducts(products);
           if (currentUser && currentUser.role === 'shopkeeper') loadSellerDashboard();
           if (adminToken) renderAdminDashboard();
-        } else if (shops.length > 0) {
-          shops.forEach(s => db.collection("shops").doc(String(s.id)).set(s));
         }
       }, err => console.log("Shops sync:", err));
 
-      // 4. Products Sync
+      // 4. Products
       db.collection("products").onSnapshot(snap => {
         if (!snap.empty) {
           const list = [];
@@ -916,12 +999,10 @@
           localStorage.setItem('bb_products', JSON.stringify(products));
           renderProducts(products);
           if (currentUser && currentUser.role === 'shopkeeper') loadSellerDashboard();
-        } else if (products.length > 0) {
-          products.forEach(p => db.collection("products").doc(String(p.id)).set(p));
         }
       }, err => console.log("Products sync:", err));
 
-      // 5. Orders Sync (Instant Multi-Device Sync for Seller & Customer)
+      // 5. Orders (Multi-device instant sync)
       db.collection("orders").onSnapshot(snap => {
         if (!snap.empty) {
           const list = [];
@@ -935,7 +1016,7 @@
         }
       }, err => console.log("Orders sync:", err));
 
-      // 6. Banners Sync
+      // 6. Banners
       db.collection("adBanners").onSnapshot(snap => {
         if (!snap.empty) {
           const list = [];
@@ -944,8 +1025,6 @@
           localStorage.setItem('bb_ad_banners', JSON.stringify(adBanners));
           initHomeAdCarousel();
           if (adminToken) renderAdminDashboard();
-        } else if (adBanners.length > 0) {
-          adBanners.forEach(b => db.collection("adBanners").doc(String(b.id)).set(b));
         }
       }, err => console.log("Banners sync:", err));
     }
@@ -953,6 +1032,7 @@
     document.addEventListener('DOMContentLoaded', () => {
       lucide.createIcons();
       applyMaintenanceView();
+      applyTranslations();
       initHomeAdCarousel();
       setupZoomPanEvents();
       renderProducts(products);
@@ -1235,15 +1315,17 @@
     function renderProducts(items) {
       const grid = document.getElementById('productsGrid');
       grid.innerHTML = '';
+      const dict = translations[currentLang] || translations.en;
+
       if (!items || !items.length) {
-        grid.innerHTML = '<div class="col-span-full py-12 text-center text-gray-400 text-xs">Koi item nahi mila.</div>';
+        grid.innerHTML = `<div class="col-span-full py-12 text-center text-gray-400 text-xs">${dict.empty_items}</div>`;
         return;
       }
 
       items.forEach(prod => {
         const title = prod.title || prod.name || 'Bazaar Item';
         const price = prod.pricePerUnit || prod.pricePerKg || prod.price || 0;
-        const shop = shops.find(s => String(s.id) === String(prod.shopId)) || { shopName: (prod.seller || 'Bhallegaon Shop'), isOpen: true };
+        const shop = shops.find(s => String(s.id) === String(prod.shopId)) || { shopName: (prod.seller || 'Local Shop'), isOpen: true };
         const isClosed = (shop.isOpen === false);
 
         if (!weightSelections[prod.id]) {
@@ -1264,7 +1346,7 @@
           <div>
             <div class="relative w-full h-40 bg-gray-100 overflow-hidden cursor-pointer" onclick="expandImage('${img}')" title="Click to view large photo">
               <img src="${img}" class="w-full h-full object-cover hover:scale-105 transition duration-300" />
-              ${isClosed ? '<span class="absolute top-2 left-2 bg-red-600 text-white font-bold text-[10px] px-2 py-0.5 rounded shadow">Dukan Band Hai</span>' : ''}
+              ${isClosed ? `<span class="absolute top-2 left-2 bg-red-600 text-white font-bold text-[10px] px-2 py-0.5 rounded shadow">${dict.btn_shop_closed}</span>` : ''}
             </div>
             <div class="p-3">
               <p class="text-[11px] font-bold text-brand-orange flex items-center gap-1">
@@ -1312,7 +1394,7 @@
           </div>
           <div class="p-3 pt-0">
             <button type="button" onclick="addToCart('${prod.id}')" ${isClosed ? 'disabled' : ''} class="w-full bg-brand-orange text-white py-1.5 rounded-xl font-bold text-xs shadow hover:bg-orange-600 transition disabled:bg-gray-400">
-              ${isClosed ? 'Dukan Band Hai' : 'Add to Cart'}
+              ${isClosed ? dict.btn_shop_closed : dict.btn_add_cart}
             </button>
           </div>
         `;
@@ -1360,7 +1442,7 @@
       if (shop && shop.isOpen === false) return alert("Yeh dukaan filhal band hai. Aap add nahi kar sakte.");
 
       const resolvedShopId = shop ? String(shop.id) : String(prod.shopId || 'shop-1');
-      const shopName = shop ? shop.shopName : (prod.seller || "Bhallegaon Store");
+      const shopName = shop ? shop.shopName : (prod.seller || "Local Store");
       const title = prod.title || prod.name || "Bazaar Item";
       const unitType = prod.unitType || 'packet';
 
@@ -1409,8 +1491,10 @@
     function renderCart() {
       const container = document.getElementById('cartContentWrapper');
       container.innerHTML = '';
+      const dict = translations[currentLang] || translations.en;
+
       if (!cart || !cart.length) {
-        container.innerHTML = '<div class="p-8 text-center text-gray-400 bg-white rounded-2xl border text-xs">Aapka bag khali hai. Home page se item add karein.</div>';
+        container.innerHTML = `<div class="p-8 text-center text-gray-400 bg-white rounded-2xl border text-xs">${dict.empty_cart}</div>`;
         return;
       }
 
@@ -1472,7 +1556,7 @@
           <p class="text-[10px] text-gray-500">Pick up time shaam 6:00 PM tak hai.</p>
         </div>
         <button type="button" onclick="handleCheckout()" class="w-full md:w-auto bg-brand-green text-white px-6 py-2 rounded-xl font-black text-xs shadow hover:bg-green-700 transition">
-          Order Confirm Karein
+          ${dict.btn_order_confirm}
         </button>
       `;
       container.appendChild(summary);
@@ -1543,18 +1627,22 @@
       Promise.all(syncPromises).catch(e => console.error("Cloud push failed:", e));
     }
 
-    // Direct WhatsApp Deep Link Navigation (Bypasses browser popup blocking)
+    // Direct WhatsApp Deep Link Navigation (Bypasses popup blocker & finds phone safely)
     function sendOrderToWhatsApp(orderId) {
       const ord = orders.find(o => String(o.id) === String(orderId));
       if (!ord) return alert("Order details nahi mili.");
 
+      let rawPhone = '';
       const shop = shops.find(s => String(s.id) === String(ord.shopId) || String(s.ownerId) === String(ord.shopId));
-      let rawPhone = shop ? shop.phone : '';
+      if (shop && shop.phone) rawPhone = shop.phone;
 
       if (!rawPhone) {
         const sellerUser = users.find(u => String(u.shopId) === String(ord.shopId) || String(u.id) === String(ord.shopId));
-        if (sellerUser) rawPhone = sellerUser.phone;
+        if (sellerUser && sellerUser.phone) rawPhone = sellerUser.phone;
       }
+
+      // Customer fallback phone
+      if (!rawPhone && currentUser && currentUser.phone) rawPhone = currentUser.phone;
 
       const cleanPhone = normalizePhone(rawPhone);
       if (!cleanPhone || cleanPhone.length < 10) {
@@ -1574,8 +1662,7 @@
       text += `_Kripya samaan pack karke thele par Customer Name aur Code #${ord.pickupCode} likh dein._`;
 
       const targetPhone = '91' + cleanPhone;
-      const url = `https://wa.me/${targetPhone}?text=${encodeURIComponent(text)}`;
-      window.location.href = url;
+      window.location.href = `https://wa.me/${targetPhone}?text=${encodeURIComponent(text)}`;
     }
 
     function chatWithCustomerWhatsApp(customerPhone, pickupCode, customerName) {
@@ -1584,8 +1671,7 @@
 
       const targetPhone = '91' + cleanPhone;
       const text = `Namaste ${customerName} ji! Aapka Bhallegaon Bagwan Bazaar order #${pickupCode} pack ho chuka hai. Kripya shaam 6:00 PM se pehle dukaan se collect kar lein.`;
-      const url = `https://wa.me/${targetPhone}?text=${encodeURIComponent(text)}`;
-      window.location.href = url;
+      window.location.href = `https://wa.me/${targetPhone}?text=${encodeURIComponent(text)}`;
     }
 
     function loadCustomerOrders() {
@@ -1613,7 +1699,7 @@
             <div class="flex justify-between items-center border-b pb-2">
               <div>
                 <h4 class="font-extrabold text-xs text-gray-900">${shop.shopName}</h4>
-                ${appSettings.showSellerPhone ? '<p class="text-[10px] text-brand-orange font-bold">📞 ' + shop.phone + '</p>' : ''}
+                ${appSettings.showSellerPhone && shop.phone ? '<p class="text-[10px] text-brand-orange font-bold">📞 ' + shop.phone + '</p>' : ''}
               </div>
               <div class="text-right">
                 <span class="text-[9px] text-gray-400 block uppercase font-bold">Pickup Security Code</span>
@@ -1648,6 +1734,13 @@
 
     function renderShops(list) {
       const container = document.getElementById('shopsListContainer');
+      const dict = translations[currentLang] || translations.en;
+
+      if (!list || !list.length) {
+        container.innerHTML = `<div class="col-span-full py-8 text-center text-gray-400 text-xs">Koi registered dukan nahi hai. Dukaandaar register karein.</div>`;
+        return;
+      }
+
       container.innerHTML = list.map(s => `
         <div class="bg-white p-4 rounded-2xl border shadow-sm flex flex-col justify-between ${!s.isOpen ? 'shop-closed-filter' : ''}">
           <div>
@@ -1658,10 +1751,10 @@
               </span>
             </div>
             <p class="text-[11px] text-gray-500 mb-1">${s.address}</p>
-            ${appSettings.showSellerPhone ? '<p class="text-[11px] font-bold text-brand-orange">📞 ' + s.phone + '</p>' : ''}
+            ${appSettings.showSellerPhone && s.phone ? '<p class="text-[11px] font-bold text-brand-orange">📞 ' + s.phone + '</p>' : ''}
           </div>
           <button type="button" onclick="filterByShop('${s.id}')" class="mt-3 w-full bg-orange-50 text-brand-orange font-bold text-xs py-1.5 rounded-xl hover:bg-orange-100 transition">
-            Dukan Ke Items Dekhein
+            ${dict.btn_view_items}
           </button>
         </div>
       `).join('');
@@ -1731,8 +1824,10 @@
       document.getElementById('sellerAdminDue').innerText = '₹' + totalAdminDue.toFixed(2);
 
       const tbody = document.getElementById('sellerOrdersTableBody');
+      const dict = translations[currentLang] || translations.en;
+
       if (!shopOrders.length) {
-        tbody.innerHTML = '<tr><td colspan="9" class="p-4 text-center text-gray-400">Abhi koi order nahi aaya hai.</td></tr>';
+        tbody.innerHTML = `<tr><td colspan="9" class="p-4 text-center text-gray-400">${dict.empty_seller_orders}</td></tr>`;
       } else {
         tbody.innerHTML = shopOrders.slice().reverse().map(ord => {
           const items = ord.items.map(i => `${i.title} (${i.weightDesc})`).join(', ');
@@ -1921,7 +2016,7 @@
         else sellerTab.classList.add('hidden');
       } else {
         nav.innerHTML = `
-          <button onclick="openAuthModal()" class="bg-white text-brand-deepOrange px-3 py-1 rounded-full font-bold text-xs shadow hover:bg-yellow-100 transition">
+          <button onclick="openAuthModal()" class="bg-white text-brand-deepOrange px-3 py-1 rounded-full font-bold text-xs shadow hover:bg-yellow-100 transition" data-i18n="login_reg">
             Login / Register
           </button>
         `;
@@ -2046,7 +2141,6 @@
       document.getElementById('accEditAddress').value = currentUser.address || '';
     }
 
-    // --- PROFILE PHOTO CHANGE FROM BROWSER ---
     function handleProfilePhotoChange(e) {
       const file = e.target.files[0];
       if (!file || !currentUser) return;
