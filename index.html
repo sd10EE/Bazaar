@@ -504,11 +504,14 @@
           <button onclick="switchAdminTab('sellers')" id="admTabBtnSellers" class="py-2.5 px-3 border-b-2 border-transparent hover:text-brand-orange">
             Sellers & Commission Due (2%)
           </button>
+          <button onclick="switchAdminTab('allProds')" id="admTabBtnAllProds" class="py-2.5 px-3 border-b-2 border-transparent hover:text-brand-orange flex items-center gap-1">
+            <i data-lucide="package" class="w-3.5 h-3.5 text-brand-orange"></i> All Products (Delete/Manage)
+          </button>
           <button onclick="switchAdminTab('orders')" id="admTabBtnOrders" class="py-2.5 px-3 border-b-2 border-transparent hover:text-brand-orange">
             All Orders & Revenue Ledger
           </button>
           <button onclick="switchAdminTab('banners')" id="admTabBtnBanners" class="py-2.5 px-3 border-b-2 border-transparent hover:text-brand-orange flex items-center gap-1">
-            <i data-lucide="image" class="w-3.5 h-3.5 text-brand-orange"></i> Ad Banners & Commercials (₹300/Day)
+            <i data-lucide="image" class="w-3.5 h-3.5 text-brand-orange"></i> Ad Banners (₹300/Day)
           </button>
           <button onclick="switchAdminTab('settings')" id="admTabBtnSettings" class="py-2.5 px-3 border-b-2 border-transparent hover:text-brand-orange">
             System & Toggles
@@ -573,6 +576,34 @@
             </div>
           </div>
 
+          <!-- NEW: ALL PRODUCTS & CLOUD CLEANUP SECTION FOR ADMIN -->
+          <div id="admSectionAllProds" class="hidden space-y-3">
+            <div class="flex flex-wrap justify-between items-center gap-2">
+              <div>
+                <h4 class="text-xs font-black text-gray-700 uppercase tracking-wide">Live Products Database (Admin Master Control)</h4>
+                <p class="text-[11px] text-gray-500">Kisi bhi dukan ya purane test item ko yahan se permanent delete karein.</p>
+              </div>
+              <button onclick="admDeleteAllDummyProducts()" class="bg-red-600 hover:bg-red-700 text-white font-bold px-3 py-1.5 rounded-xl text-xs flex items-center gap-1 shadow transition">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Purge All Dummy/Test Items
+              </button>
+            </div>
+            <div class="border rounded-xl overflow-x-auto shadow-sm">
+              <table class="w-full text-left text-xs min-w-[750px]">
+                <thead class="bg-gray-50 border-b text-gray-500 font-bold uppercase">
+                  <tr>
+                    <th class="p-2.5">Item Photo</th>
+                    <th class="p-2.5">Title / Name</th>
+                    <th class="p-2.5">Shop / Seller</th>
+                    <th class="p-2.5">Price</th>
+                    <th class="p-2.5">Packaging</th>
+                    <th class="p-2.5 text-center">Delete From Cloud</th>
+                  </tr>
+                </thead>
+                <tbody id="admAllProductsTableBody" class="divide-y"></tbody>
+              </table>
+            </div>
+          </div>
+
           <!-- Master Orders Ledger -->
           <div id="admSectionOrders" class="hidden space-y-3">
             <div class="flex justify-between items-center">
@@ -599,7 +630,7 @@
             </div>
           </div>
 
-          <!-- UPGRADED: ADVERTISEMENT BANNERS MANAGEMENT TAB -->
+          <!-- ADVERTISEMENT BANNERS MANAGEMENT TAB -->
           <div id="admSectionBanners" class="hidden space-y-6">
             <div class="bg-orange-50/70 border border-orange-200 p-4 rounded-2xl">
               <div class="flex flex-wrap justify-between items-center gap-2 mb-2">
@@ -642,7 +673,6 @@
                   <select id="adBannerShopRedirect" class="w-full p-2 border rounded-lg text-xs"></select>
                 </div>
 
-                <!-- Commercial Billing Calculation -->
                 <div class="bg-white p-2.5 rounded-xl border col-span-full grid grid-cols-1 sm:grid-cols-3 gap-3 items-center">
                   <div>
                     <label class="block text-[11px] font-bold text-gray-700 mb-0.5">Duration (Days / 24 Hours Slab)</label>
@@ -664,7 +694,6 @@
               </form>
             </div>
 
-            <!-- Tabular View of Banners & Commercial Ledger -->
             <div>
               <div class="flex flex-wrap justify-between items-center gap-2 mb-2">
                 <h4 class="text-xs font-black text-gray-700 uppercase tracking-wide">Banners Directory & Commercial Ledger (Tabular View)</h4>
@@ -693,7 +722,7 @@
             </div>
           </div>
 
-          <!-- System Toggles -->
+          <!-- System Toggles & Complete Cleanup -->
           <div id="admSectionSettings" class="hidden space-y-4 max-w-lg">
             <div class="flex items-center justify-between p-3.5 bg-gray-50 rounded-2xl border">
               <div>
@@ -712,6 +741,14 @@
               </div>
               <button id="adminPhoneToggleBtn" onclick="togglePhoneVisibilitySetting()" class="relative inline-flex h-6 w-11 items-center rounded-full bg-green-500 transition">
                 <span id="adminPhoneCircle" class="inline-block h-4 w-4 transform rounded-full bg-white transition translate-x-6"></span>
+              </button>
+            </div>
+
+            <div class="p-3.5 bg-rose-50 rounded-2xl border border-rose-200">
+              <p class="text-xs font-black text-rose-900 mb-1">Database Cloud Reset</p>
+              <p class="text-[11px] text-rose-700 mb-3">Agar koi purana demo/dummy data cloud par reh gaya ho toh use poori tarah saaf karein.</p>
+              <button onclick="admDeleteAllDummyProducts()" class="bg-rose-600 hover:bg-rose-700 text-white font-bold px-3 py-1.5 rounded-xl text-xs shadow transition">
+                Clean All Dummy Data From Cloud
               </button>
             </div>
           </div>
@@ -871,7 +908,7 @@
       if (langSel) langSel.value = currentLang;
     }
 
-    // --- 1. FIREBASE INITIALIZATION ---
+    // --- FIREBASE INITIALIZATION ---
     const firebaseConfig = {
       apiKey: "AIzaSyDCw6vF1BwYp8K1K13TTmg8pT5W5G7NGjk",
       authDomain: "bazaar-1402f.firebaseapp.com",
@@ -898,7 +935,7 @@
       return s.slice(-10);
     }
 
-    // State Management - Completely Fresh & Clean (No Hardcoded Dummy Shops/Items)
+    // Zero default dummy state
     let appSettings = JSON.parse(localStorage.getItem('bb_settings')) || { maintenanceMode: false, showSellerPhone: true };
     let users = JSON.parse(localStorage.getItem('bb_users')) || [];
     let shops = JSON.parse(localStorage.getItem('bb_shops')) || [];
@@ -940,9 +977,8 @@
       localStorage.setItem('bb_cart', JSON.stringify(cart));
     }
 
-    // --- FIRESTORE REALTIME SYNC ENGINE ---
+    // --- FIRESTORE REALTIME SYNC ---
     function initFirestoreLiveSync() {
-      // 1. Settings
       db.collection("settings").doc("appSettings").onSnapshot(doc => {
         if (doc.exists) {
           appSettings = doc.data();
@@ -955,77 +991,62 @@
         }
       }, err => console.log("Settings sync:", err));
 
-      // 2. Users
       db.collection("users").onSnapshot(snap => {
-        if (!snap.empty) {
-          const list = [];
-          snap.forEach(d => list.push({ id: d.id, ...d.data() }));
-          users = mergeUniqueById([], list);
-          localStorage.setItem('bb_users', JSON.stringify(users));
-          
-          if (currentUser) {
-            const freshMe = users.find(u => String(u.id) === String(currentUser.id));
-            if (freshMe) {
-              currentUser = freshMe;
-              localStorage.setItem('bb_current_user', JSON.stringify(currentUser));
-              updateAuthUI();
-              populateAccount();
-            }
+        const list = [];
+        snap.forEach(d => list.push({ id: d.id, ...d.data() }));
+        users = mergeUniqueById([], list);
+        localStorage.setItem('bb_users', JSON.stringify(users));
+        if (currentUser) {
+          const freshMe = users.find(u => String(u.id) === String(currentUser.id));
+          if (freshMe) {
+            currentUser = freshMe;
+            localStorage.setItem('bb_current_user', JSON.stringify(currentUser));
+            updateAuthUI();
+            populateAccount();
           }
-          if (adminToken) renderAdminDashboard();
         }
+        if (adminToken) renderAdminDashboard();
       }, err => console.log("Users sync:", err));
 
-      // 3. Shops
       db.collection("shops").onSnapshot(snap => {
-        if (!snap.empty) {
-          const list = [];
-          snap.forEach(d => list.push({ id: d.id, ...d.data() }));
-          shops = mergeUniqueById([], list);
-          localStorage.setItem('bb_shops', JSON.stringify(shops));
-          renderShops(shops);
-          renderProducts(products);
-          if (currentUser && currentUser.role === 'shopkeeper') loadSellerDashboard();
-          if (adminToken) renderAdminDashboard();
-        }
+        const list = [];
+        snap.forEach(d => list.push({ id: d.id, ...d.data() }));
+        shops = mergeUniqueById([], list);
+        localStorage.setItem('bb_shops', JSON.stringify(shops));
+        renderShops(shops);
+        renderProducts(products);
+        if (currentUser && currentUser.role === 'shopkeeper') loadSellerDashboard();
+        if (adminToken) renderAdminDashboard();
       }, err => console.log("Shops sync:", err));
 
-      // 4. Products
       db.collection("products").onSnapshot(snap => {
-        if (!snap.empty) {
-          const list = [];
-          snap.forEach(d => list.push({ id: d.id, ...d.data() }));
-          products = mergeUniqueById([], list);
-          localStorage.setItem('bb_products', JSON.stringify(products));
-          renderProducts(products);
-          if (currentUser && currentUser.role === 'shopkeeper') loadSellerDashboard();
-        }
+        const list = [];
+        snap.forEach(d => list.push({ id: d.id, ...d.data() }));
+        products = mergeUniqueById([], list);
+        localStorage.setItem('bb_products', JSON.stringify(products));
+        renderProducts(products);
+        if (currentUser && currentUser.role === 'shopkeeper') loadSellerDashboard();
+        if (adminToken) renderAdminDashboard();
       }, err => console.log("Products sync:", err));
 
-      // 5. Orders (Multi-device instant sync)
       db.collection("orders").onSnapshot(snap => {
-        if (!snap.empty) {
-          const list = [];
-          snap.forEach(d => list.push({ id: d.id, ...d.data() }));
-          list.sort((a,b) => new Date(a.rawDate || 0) - new Date(b.rawDate || 0));
-          orders = mergeUniqueById([], list);
-          localStorage.setItem('bb_orders', JSON.stringify(orders));
-          if (currentUser && currentUser.role === 'customer') loadCustomerOrders();
-          if (currentUser && currentUser.role === 'shopkeeper') loadSellerDashboard();
-          if (adminToken) renderAdminDashboard();
-        }
+        const list = [];
+        snap.forEach(d => list.push({ id: d.id, ...d.data() }));
+        list.sort((a,b) => new Date(a.rawDate || 0) - new Date(b.rawDate || 0));
+        orders = mergeUniqueById([], list);
+        localStorage.setItem('bb_orders', JSON.stringify(orders));
+        if (currentUser && currentUser.role === 'customer') loadCustomerOrders();
+        if (currentUser && currentUser.role === 'shopkeeper') loadSellerDashboard();
+        if (adminToken) renderAdminDashboard();
       }, err => console.log("Orders sync:", err));
 
-      // 6. Banners
       db.collection("adBanners").onSnapshot(snap => {
-        if (!snap.empty) {
-          const list = [];
-          snap.forEach(d => list.push({ id: d.id, ...d.data() }));
-          adBanners = mergeUniqueById([], list);
-          localStorage.setItem('bb_ad_banners', JSON.stringify(adBanners));
-          initHomeAdCarousel();
-          if (adminToken) renderAdminDashboard();
-        }
+        const list = [];
+        snap.forEach(d => list.push({ id: d.id, ...d.data() }));
+        adBanners = mergeUniqueById([], list);
+        localStorage.setItem('bb_ad_banners', JSON.stringify(adBanners));
+        initHomeAdCarousel();
+        if (adminToken) renderAdminDashboard();
       }, err => console.log("Banners sync:", err));
     }
 
@@ -1627,7 +1648,7 @@
       Promise.all(syncPromises).catch(e => console.error("Cloud push failed:", e));
     }
 
-    // Direct WhatsApp Deep Link Navigation (Bypasses popup blocker & finds phone safely)
+    // Direct WhatsApp Deep Link Navigation
     function sendOrderToWhatsApp(orderId) {
       const ord = orders.find(o => String(o.id) === String(orderId));
       if (!ord) return alert("Order details nahi mili.");
@@ -1641,7 +1662,6 @@
         if (sellerUser && sellerUser.phone) rawPhone = sellerUser.phone;
       }
 
-      // Customer fallback phone
       if (!rawPhone && currentUser && currentUser.phone) rawPhone = currentUser.phone;
 
       const cleanPhone = normalizePhone(rawPhone);
@@ -2141,6 +2161,7 @@
       document.getElementById('accEditAddress').value = currentUser.address || '';
     }
 
+    // --- PROFILE PHOTO CHANGE FROM BROWSER ---
     function handleProfilePhotoChange(e) {
       const file = e.target.files[0];
       if (!file || !currentUser) return;
@@ -2248,7 +2269,7 @@
       const elShops = document.getElementById('kpiActiveShops');
       if (elShops) elShops.innerText = shops.filter(s => s.isOpen).length;
 
-      // 1. Customers Table (Strictly unique)
+      // 1. Customers Table
       const custBody = document.getElementById('admCustomersTableBody');
       const customersList = mergeUniqueById([], users.filter(u => u.role === 'customer'));
       if (custBody) {
@@ -2274,7 +2295,7 @@
         }
       }
 
-      // 2. Sellers Table & 2% Ledger (Strictly unique)
+      // 2. Sellers Table & 2% Ledger
       const sellerBody = document.getElementById('admSellersTableBody');
       const sellersList = mergeUniqueById([], users.filter(u => u.role === 'shopkeeper'));
       
@@ -2319,7 +2340,37 @@
         }
       }
 
-      // 3. Master Orders Table
+      // 3. Admin All Products Master Table
+      const allProdsBody = document.getElementById('admAllProductsTableBody');
+      if (allProdsBody) {
+        if (!products.length) {
+          allProdsBody.innerHTML = '<tr><td colspan="6" class="p-3 text-center text-gray-400">Database me koi product nahi hai.</td></tr>';
+        } else {
+          allProdsBody.innerHTML = products.map(p => {
+            const shop = shops.find(s => String(s.id) === String(p.shopId)) || { shopName: (p.seller || 'Local Shop') };
+            const img = (p.images && p.images.length > 0) ? p.images[0] : (p.img || 'https://via.placeholder.com/60');
+            const price = p.pricePerUnit || p.pricePerKg || p.price || 0;
+            return `
+              <tr class="hover:bg-gray-50 border-b">
+                <td class="p-2">
+                  <img src="${img}" onclick="expandImage('${img}')" class="w-9 h-9 rounded-lg object-cover border cursor-pointer" />
+                </td>
+                <td class="p-2.5 font-bold text-gray-900">${p.title || p.name || 'Bazaar Item'}</td>
+                <td class="p-2.5 font-semibold text-brand-orange">${shop.shopName}</td>
+                <td class="p-2.5 font-black text-gray-900">₹${price}</td>
+                <td class="p-2.5 text-gray-500">${p.unitType || 'packet'}</td>
+                <td class="p-2.5 text-center">
+                  <button type="button" onclick="admDeleteSingleProduct('${p.id}')" class="text-red-500 hover:text-red-700 p-1 font-bold inline-flex items-center gap-1" title="Delete Product from Cloud">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i> Delete
+                  </button>
+                </td>
+              </tr>
+            `;
+          }).join('');
+        }
+      }
+
+      // 4. Master Orders Table
       const orderBody = document.getElementById('admOrdersTableBody');
       if (orderBody) {
         if (!orders.length) {
@@ -2355,6 +2406,56 @@
       renderAdminBannersTable();
       updateAdminToggleUI();
       lucide.createIcons();
+    }
+
+    // Direct Admin Product Deletion
+    async function admDeleteSingleProduct(productId) {
+      if (!confirm("Kya aap sach me is product ko Firebase Cloud se permanently delete karna chahte hain?")) return;
+      products = products.filter(p => String(p.id) !== String(productId));
+      saveData();
+      renderProducts(products);
+      renderAdminDashboard();
+
+      try {
+        await db.collection("products").doc(String(productId)).delete();
+        alert("Product Cloud Database se permanently delete ho gaya!");
+      } catch (err) {
+        console.error("Product cloud delete error:", err);
+      }
+    }
+
+    // Purge All Test / Dummy Items
+    async function admDeleteAllDummyProducts() {
+      if (!confirm("Kya aap sabhi purane dummy items aur test products ko cloud se hatana chahte hain?")) return;
+      
+      try {
+        const snap = await db.collection("products").get();
+        const batch = db.batch();
+        snap.forEach(doc => {
+          const d = doc.data();
+          const name = (d.title || d.name || '').toLowerCase();
+          const seller = (d.seller || '').toLowerCase();
+          // Target dummy items like 'Dukan 1', 'Bhallegaon Shop', 'Pahadi Basmati Rice', etc.
+          if (name.includes('rice') || name.includes('daal') || name.includes('gh') || seller.includes('dukan') || d.shopId === 'shop-1') {
+            batch.delete(doc.ref);
+          }
+        });
+        await batch.commit();
+
+        products = products.filter(p => {
+          const t = (p.title || p.name || '').toLowerCase();
+          const s = (p.seller || '').toLowerCase();
+          return !t.includes('rice') && !t.includes('daal') && !t.includes('gh') && !s.includes('dukan');
+        });
+
+        saveData();
+        renderProducts(products);
+        renderAdminDashboard();
+        alert("Saara dummy aur test data Firebase Cloud se delete kar diya gaya hai!");
+      } catch (e) {
+        console.error("Purge error:", e);
+        alert("Clean karte waqt error: " + e.message);
+      }
     }
 
     function renderAdminBannersTable() {
@@ -2573,10 +2674,10 @@
     }
 
     function switchAdminTab(subTab) {
-      ['admSectionUsers', 'admSectionSellers', 'admSectionOrders', 'admSectionBanners', 'admSectionSettings'].forEach(id => {
+      ['admSectionUsers', 'admSectionSellers', 'admSectionAllProds', 'admSectionOrders', 'admSectionBanners', 'admSectionSettings'].forEach(id => {
         document.getElementById(id).classList.add('hidden');
       });
-      ['admTabBtnUsers', 'admTabBtnSellers', 'admTabBtnOrders', 'admTabBtnBanners', 'admTabBtnSettings'].forEach(id => {
+      ['admTabBtnUsers', 'admTabBtnSellers', 'admTabBtnAllProds', 'admTabBtnOrders', 'admTabBtnBanners', 'admTabBtnSettings'].forEach(id => {
         const btn = document.getElementById(id);
         btn.classList.remove('border-brand-orange', 'text-brand-orange');
         btn.classList.add('border-transparent');
@@ -2588,6 +2689,9 @@
       } else if (subTab === 'sellers') {
         document.getElementById('admSectionSellers').classList.remove('hidden');
         document.getElementById('admTabBtnSellers').classList.add('border-brand-orange', 'text-brand-orange');
+      } else if (subTab === 'allProds') {
+        document.getElementById('admSectionAllProds').classList.remove('hidden');
+        document.getElementById('admTabBtnAllProds').classList.add('border-brand-orange', 'text-brand-orange');
       } else if (subTab === 'orders') {
         document.getElementById('admSectionOrders').classList.remove('hidden');
         document.getElementById('admTabBtnOrders').classList.add('border-brand-orange', 'text-brand-orange');
