@@ -162,12 +162,19 @@
     <!-- ACCOUNT TAB -->
     <section id="viewAccount" class="hidden">
       <div class="max-w-md mx-auto bg-white p-6 rounded-2xl shadow border">
-        <div class="flex items-center gap-4 border-b pb-4 mb-4">
-          <img id="accAvatar" src="https://via.placeholder.com/80" onclick="expandImage(this.src)" class="w-16 h-16 rounded-full object-cover border-2 border-brand-orange shadow-sm cursor-pointer hover:opacity-80 transition" title="Click to view large photo" />
+        <div class="flex flex-col sm:flex-row items-center gap-4 border-b pb-4 mb-4 text-center sm:text-left">
+          <div class="relative group">
+            <img id="accAvatar" src="https://via.placeholder.com/80" onclick="expandImage(this.src)" class="w-20 h-20 rounded-full object-cover border-2 border-brand-orange shadow cursor-pointer hover:opacity-80 transition" title="Bade size me dekhein" />
+            <label for="accNewPhotoInput" class="absolute bottom-0 right-0 bg-brand-orange hover:bg-orange-600 text-white p-1.5 rounded-full shadow-lg cursor-pointer transition" title="Photo Badlein">
+              <i data-lucide="camera" class="w-3.5 h-3.5"></i>
+            </label>
+            <input type="file" id="accNewPhotoInput" accept="image/*" class="hidden" onchange="handleProfilePhotoChange(event)" />
+          </div>
           <div>
-            <h3 id="accName" class="font-extrabold text-sm text-gray-900">Name</h3>
+            <h3 id="accName" class="font-extrabold text-base text-gray-900">Name</h3>
             <p id="accPhone" class="text-xs text-gray-500">Phone</p>
-            <span id="accRoleBadge" class="inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-orange-100 text-brand-orange">Role</span>
+            <span id="accRoleBadge" class="inline-block mt-1 px-2.5 py-0.5 rounded text-[10px] font-bold uppercase bg-orange-100 text-brand-orange">Role</span>
+            <p class="text-[10px] text-gray-400 mt-1">Camera icon daba kar photo badal sakte hain</p>
           </div>
         </div>
         <form onsubmit="handleProfileUpdate(event)" class="space-y-3">
@@ -729,6 +736,14 @@
       return Array.from(map.values());
     }
 
+    // Helper: Normalize phone numbers (strips country code, spaces, dashes)
+    function normalizePhone(p) {
+      if (!p) return '';
+      let s = String(p).trim().replace(/\D/g, '');
+      if (s.length > 10 && s.startsWith('91')) s = s.slice(2);
+      return s.slice(-10);
+    }
+
     // State Management
     let appSettings = JSON.parse(localStorage.getItem('bb_settings')) || { maintenanceMode: false, showSellerPhone: true };
     let users = JSON.parse(localStorage.getItem('bb_users')) || [
@@ -822,7 +837,6 @@
     const weightSelections = {};
 
     function saveData() {
-      // De-duplicate state lists before writing
       users = mergeUniqueById([], users);
       shops = mergeUniqueById([], shops);
       products = mergeUniqueById([], products);
@@ -861,6 +875,17 @@
           snap.forEach(d => list.push({ id: d.id, ...d.data() }));
           users = mergeUniqueById([], list);
           localStorage.setItem('bb_users', JSON.stringify(users));
+          
+          // Current user profile sync
+          if (currentUser) {
+            const freshMe = users.find(u => String(u.id) === String(currentUser.id));
+            if (freshMe) {
+              currentUser = freshMe;
+              localStorage.setItem('bb_current_user', JSON.stringify(currentUser));
+              updateAuthUI();
+              populateAccount();
+            }
+          }
           if (adminToken) renderAdminDashboard();
         } else if (users.length > 0) {
           users.forEach(u => db.collection("users").doc(String(u.id)).set(u));
@@ -1917,9 +1942,9 @@
 
     function handleLogin(e) {
       e.preventDefault();
-      const phone = document.getElementById('loginPhone').value.trim();
-      const u = users.find(x => x.phone === phone);
-      if (!u) return alert('Yeh phone number registered nahi hai.');
+      const inputPhone = normalizePhone(document.getElementById('loginPhone').value);
+      const u = users.find(x => normalizePhone(x.phone) === inputPhone);
+      if (!u) return alert('Yeh phone number registered nahi hai. Kripya pehle register karein.');
 
       currentUser = u;
       saveData();
@@ -1933,14 +1958,20 @@
       const file = document.getElementById('regProfilePic').files[0];
       if (!file) return alert('Profile photo lagana anivarya (mandatory) hai!');
 
-      const phone = document.getElementById('regPhone').value.trim();
-      if (users.find(u => u.phone === phone)) return alert('Yeh number pehle se registered hai.');
+      const inputPhone = normalizePhone(document.getElementById('regPhone').value);
+      if (inputPhone.length < 10) return alert('Kripya 10-digit sahi mobile number darj karein.');
+
+      // Strict Phone Check
+      const existingUser = users.find(u => normalizePhone(u.phone) === inputPhone);
+      if (existingUser) {
+        return alert('Yeh number pehle se registered hai! Kripya Login karein.');
+      }
 
       const role = document.getElementById('regRole').value;
-      const name = document.getElementById('regName').value;
-      const email = document.getElementById('regEmail').value;
-      const address = document.getElementById('regAddress').value;
-      const shopName = document.getElementById('regShopName').value;
+      const name = document.getElementById('regName').value.trim();
+      const email = document.getElementById('regEmail').value.trim();
+      const address = document.getElementById('regAddress').value.trim();
+      const shopName = document.getElementById('regShopName').value.trim();
 
       const reader = new FileReader();
       reader.onload = async function(evt) {
@@ -1955,7 +1986,7 @@
             id: String(shopId),
             ownerId: userId,
             shopName,
-            phone,
+            phone: inputPhone,
             address,
             isOpen: true
           };
@@ -1965,7 +1996,17 @@
           } catch(err) { console.error(err); }
         }
 
-        const newUser = { id: userId, name, phone, email, address, profilePic: profilePicUrl, role, shopId: (shopId ? String(shopId) : null) };
+        const newUser = { 
+          id: userId, 
+          name, 
+          phone: inputPhone, 
+          email, 
+          address, 
+          profilePic: profilePicUrl, 
+          role, 
+          shopId: (shopId ? String(shopId) : null) 
+        };
+
         users.push(newUser);
         currentUser = newUser;
 
@@ -1978,6 +2019,7 @@
         updateAuthUI();
         renderShops(shops);
         renderProducts(products);
+        alert('Registration safal raha! Aapka account ban gaya hai.');
         navigateTab('home');
       };
       reader.readAsDataURL(file);
@@ -1992,6 +2034,36 @@
       document.getElementById('accEditName').value = currentUser.name;
       document.getElementById('accEditEmail').value = currentUser.email || '';
       document.getElementById('accEditAddress').value = currentUser.address || '';
+    }
+
+    // --- NEW FEATURE: CHANGE PROFILE PHOTO FROM BROWSER ---
+    function handleProfilePhotoChange(e) {
+      const file = e.target.files[0];
+      if (!file || !currentUser) return;
+
+      const reader = new FileReader();
+      reader.onload = async function(evt) {
+        const newPhotoDataUrl = evt.target.result;
+        currentUser.profilePic = newPhotoDataUrl;
+
+        // Local array update
+        const idx = users.findIndex(u => String(u.id) === String(currentUser.id));
+        if (idx !== -1) users[idx].profilePic = newPhotoDataUrl;
+
+        saveData();
+        populateAccount();
+        updateAuthUI();
+
+        // Cloud Firestore update
+        try {
+          await db.collection("users").doc(String(currentUser.id)).update({ profilePic: newPhotoDataUrl });
+          alert("Profile photo safaltapoorvak update ho gayi!");
+        } catch (err) {
+          console.error("Profile pic cloud update error:", err);
+          alert("Photo locally update ho gayi hai.");
+        }
+      };
+      reader.readAsDataURL(file);
     }
 
     async function handleProfileUpdate(e) {
@@ -2100,7 +2172,7 @@
         }
       }
 
-      // 2. Sellers Table & 2% Ledger (FIX DUPLICATE: Strictly de-duplicated by ID)
+      // 2. Sellers Table & 2% Ledger (Strictly unique)
       const sellerBody = document.getElementById('admSellersTableBody');
       const sellersList = mergeUniqueById([], users.filter(u => u.role === 'shopkeeper'));
       
