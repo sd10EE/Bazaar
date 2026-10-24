@@ -294,8 +294,8 @@
   <footer class="bg-gray-900 text-gray-400 py-4 border-t border-gray-800 text-xs">
     <div class="max-w-6xl mx-auto px-4 flex justify-between items-center">
       <p><b class="text-white">BHALLEGAON - BAGWAN BAZAAR</b> &copy; 2026. Local Click & Collect Store.</p>
-      <button onclick="openAdminModal()" class="w-6 h-6 bg-gray-800 hover:bg-gray-700 rounded-full flex items-center justify-center opacity-40 hover:opacity-100 transition shadow" title="Portal Admin">
-        <i data-lucide="lock" class="w-3.5 h-3.5 text-gray-300"></i>
+      <button onclick="openAdminModal()" class="w-5 h-5 bg-gray-800 hover:bg-gray-700 rounded-full flex items-center justify-center opacity-30 hover:opacity-100 transition" title="Portal Admin">
+        <i data-lucide="lock" class="w-3 h-3 text-gray-400"></i>
       </button>
     </div>
   </footer>
@@ -502,7 +502,7 @@
             Customers Directory
           </button>
           <button onclick="switchAdminTab('sellers')" id="admTabBtnSellers" class="py-2.5 px-3 border-b-2 border-transparent hover:text-brand-orange">
-            Sellers & Shops Directory (Delete/Manage)
+            Sellers & Commission Due (2%)
           </button>
           <button onclick="switchAdminTab('allProds')" id="admTabBtnAllProds" class="py-2.5 px-3 border-b-2 border-transparent hover:text-brand-orange flex items-center gap-1">
             <i data-lucide="package" class="w-3.5 h-3.5 text-brand-orange"></i> All Products (Delete/Manage)
@@ -546,11 +546,11 @@
             </div>
           </div>
 
-          <!-- Sellers Directory & 2% Due Tracker WITH DIRECT DELETE SHOP/SELLER -->
+          <!-- Sellers Directory & 2% Due Tracker -->
           <div id="admSectionSellers" class="hidden space-y-3">
             <div class="flex flex-wrap justify-between items-center gap-2">
-              <div>
-                <h4 class="text-xs font-black text-gray-700 uppercase tracking-wide">Sellers & Shops Directory (Delete Dummy/Old Shops)</h4>
+              <div class="flex items-center gap-2">
+                <h4 class="text-xs font-black text-gray-700 uppercase tracking-wide">Sellers Directory & Commission Ledger</h4>
                 <span class="text-[11px] bg-red-100 text-red-800 font-bold px-2 py-0.5 rounded">Fee: 2% (Orders ≥ ₹150)</span>
               </div>
               <button onclick="exportSellersCSV()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-3 py-1 rounded-lg text-xs flex items-center gap-1 shadow transition">
@@ -561,13 +561,14 @@
               <table class="w-full text-left text-xs min-w-[850px]">
                 <thead class="bg-gray-50 border-b text-gray-500 font-bold uppercase">
                   <tr>
-                    <th class="p-2.5 text-center">Photo</th>
+                    <th class="p-2.5 text-center">Owner Photo</th>
                     <th class="p-2.5">Shop Name</th>
-                    <th class="p-2.5">Owner / Contact</th>
-                    <th class="p-2.5">Address</th>
-                    <th class="p-2.5 font-black text-gray-800">Total Sales</th>
-                    <th class="p-2.5 font-black text-red-600">Admin Due (2%)</th>
-                    <th class="p-2.5 text-center">Action (Delete From Cloud)</th>
+                    <th class="p-2.5">Owner Name</th>
+                    <th class="p-2.5">Contact</th>
+                    <th class="p-2.5">Total Sales</th>
+                    <th class="p-2.5 text-red-600 font-black">Admin Fee Due (2%)</th>
+                    <th class="p-2.5">Status</th>
+                    <th class="p-2.5 text-center">Action</th>
                   </tr>
                 </thead>
                 <tbody id="admSellersTableBody" class="divide-y"></tbody>
@@ -751,14 +752,9 @@
             <div class="p-3.5 bg-rose-50 rounded-2xl border border-rose-200">
               <p class="text-xs font-black text-rose-900 mb-1">Database Cloud Reset</p>
               <p class="text-[11px] text-rose-700 mb-3">Agar koi purana demo/dummy data cloud par reh gaya ho toh use poori tarah saaf karein.</p>
-              <div class="flex flex-col gap-2">
-                <button onclick="admDeleteAllDummyProducts()" class="bg-rose-600 hover:bg-rose-700 text-white font-bold px-3 py-1.5 rounded-xl text-xs shadow transition">
-                  Clean All Dummy Products From Cloud
-                </button>
-                <button onclick="admDeleteAllDummyShops()" class="bg-rose-800 hover:bg-black text-white font-bold px-3 py-1.5 rounded-xl text-xs shadow transition">
-                  Clean All Dummy/Empty Shops From Cloud
-                </button>
-              </div>
+              <button onclick="admDeleteAllDummyProducts()" class="bg-rose-600 hover:bg-rose-700 text-white font-bold px-3 py-1.5 rounded-xl text-xs shadow transition">
+                Clean All Dummy Data From Cloud
+              </button>
             </div>
           </div>
 
@@ -2225,6 +2221,196 @@
       navigateTab('home');
     }
 
+    // ================= ADMIN COCKPIT & BANNER COMMERCIAL ENGINE =================
+    function openAdminModal() { document.getElementById('adminModal').classList.remove('hidden'); }
+    function closeAdminModal() { document.getElementById('adminModal').classList.add('hidden'); }
+
+    function verifyAdmin(e) {
+      e.preventDefault();
+      const pwd = document.getElementById('adminPasswordInput').value;
+      if (pwd === 'shailesh2005') {
+        adminToken = true;
+        document.getElementById('adminPinSection').classList.add('hidden');
+        document.getElementById('adminControlSection').classList.remove('hidden');
+        renderAdminDashboard();
+        applyMaintenanceView();
+      } else {
+        alert('Galat Admin Password!');
+      }
+    }
+
+    function updateBannerCalculatedCost() {
+      const days = parseInt(document.getElementById('adBannerDays').value, 10) || 1;
+      const cost = days * 300;
+      document.getElementById('adBannerCostDisplay').innerText = `₹${cost} (${days} Din)`;
+    }
+
+    function renderAdminDashboard() {
+      const deliveredOrders = orders.filter(o => o.status === 'delivered');
+      const totalSales = deliveredOrders.reduce((sum, o) => sum + Number(o.totalAmount || 0), 0);
+      const totalAdminCut = deliveredOrders.reduce((sum, o) => {
+        const fee = (o.adminFee !== undefined) 
+          ? Number(o.adminFee) 
+          : (o.totalAmount >= 150 ? Number(o.totalAmount * 0.02) : 0);
+        return sum + fee;
+      }, 0);
+
+      const totalAdRevenue = adBanners.reduce((sum, b) => sum + Number(b.totalCharge || 0), 0);
+
+      const elRev = document.getElementById('kpiTotalRevenue');
+      if (elRev) elRev.innerText = '₹' + totalSales;
+
+      const elAdm = document.getElementById('kpiAdminEarnings');
+      if (elAdm) elAdm.innerText = '₹' + totalAdminCut.toFixed(2);
+
+      const elAdRev = document.getElementById('kpiAdEarnings');
+      if (elAdRev) elAdRev.innerText = '₹' + totalAdRevenue;
+
+      const elOrders = document.getElementById('kpiTotalOrders');
+      if (elOrders) elOrders.innerText = orders.length;
+
+      const elShops = document.getElementById('kpiActiveShops');
+      if (elShops) elShops.innerText = shops.filter(s => s.isOpen).length;
+
+      // 1. Customers Table
+      const custBody = document.getElementById('admCustomersTableBody');
+      const customersList = mergeUniqueById([], users.filter(u => u.role === 'customer'));
+      if (custBody) {
+        if (!customersList.length) {
+          custBody.innerHTML = '<tr><td colspan="6" class="p-3 text-center text-gray-400">Koi registered customer nahi hai.</td></tr>';
+        } else {
+          custBody.innerHTML = customersList.map(c => `
+            <tr class="hover:bg-gray-50 border-b">
+              <td class="p-2 text-center">
+                <img src="${c.profilePic}" onclick="expandImage('${c.profilePic}')" class="w-8 h-8 rounded-full object-cover border mx-auto cursor-pointer shadow-sm hover:scale-110 transition" title="Bade size me dekhein" />
+              </td>
+              <td class="p-2.5 font-bold text-gray-900">${c.name}</td>
+              <td class="p-2.5 text-gray-600">${c.phone}</td>
+              <td class="p-2.5 text-gray-500">${c.email || 'N/A'}</td>
+              <td class="p-2.5 text-gray-500 max-w-xs truncate">${c.address}</td>
+              <td class="p-2.5 text-center">
+                <button type="button" onclick="admDeleteUser('${c.id}')" class="text-red-500 hover:text-red-700 p-1" title="Delete User">
+                  <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
+              </td>
+            </tr>
+          `).join('');
+        }
+      }
+
+      // 2. Sellers Table & 2% Ledger
+      const sellerBody = document.getElementById('admSellersTableBody');
+      const sellersList = mergeUniqueById([], users.filter(u => u.role === 'shopkeeper'));
+      
+      if (sellerBody) {
+        if (!sellersList.length) {
+          sellerBody.innerHTML = '<tr><td colspan="8" class="p-3 text-center text-gray-400">Koi registered dukaandaar nahi hai.</td></tr>';
+        } else {
+          sellerBody.innerHTML = sellersList.map(sel => {
+            const shop = shops.find(s => String(s.ownerId) === String(sel.id) || String(s.id) === String(sel.shopId)) || { shopName: 'Shop', isOpen: false, address: sel.address, id: 'unknown' };
+            const selOrders = orders.filter(o => String(o.shopId) === String(shop.id) && o.status === 'delivered');
+            const sellerTotalSales = selOrders.reduce((s, o) => s + Number(o.totalAmount || 0), 0);
+            const sellerAdminDue = selOrders.reduce((s, o) => {
+              const fee = (o.adminFee !== undefined) 
+                ? Number(o.adminFee) 
+                : (o.totalAmount >= 150 ? Number(o.totalAmount * 0.02) : 0);
+              return s + fee;
+            }, 0);
+
+            return `
+              <tr class="hover:bg-gray-50 border-b">
+                <td class="p-2 text-center">
+                  <img src="${sel.profilePic}" onclick="expandImage('${sel.profilePic}')" class="w-8 h-8 rounded-full object-cover border mx-auto cursor-pointer shadow-sm hover:scale-110 transition" title="Bade size me dekhein" />
+                </td>
+                <td class="p-2.5 font-bold text-brand-orange">${shop.shopName}</td>
+                <td class="p-2.5 font-bold text-gray-900">${sel.name}</td>
+                <td class="p-2.5 text-gray-600">${sel.phone}</td>
+                <td class="p-2.5 font-black text-gray-800">₹${sellerTotalSales}</td>
+                <td class="p-2.5 font-black text-red-600">₹${sellerAdminDue.toFixed(2)}</td>
+                <td class="p-2.5">
+                  <span class="px-2 py-0.5 rounded text-[10px] font-bold ${shop.isOpen ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                    ${shop.isOpen ? 'Open (Till 6 PM)' : 'Closed'}
+                  </span>
+                </td>
+                <td class="p-2.5 text-center">
+                  <button type="button" onclick="admDeleteUser('${sel.id}')" class="text-red-500 hover:text-red-700 p-1" title="Delete Seller">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                  </button>
+                </td>
+              </tr>
+            `;
+          }).join('');
+        }
+      }
+
+      // 3. Admin All Products Master Table
+      const allProdsBody = document.getElementById('admAllProductsTableBody');
+      if (allProdsBody) {
+        if (!products.length) {
+          allProdsBody.innerHTML = '<tr><td colspan="6" class="p-3 text-center text-gray-400">Database me koi product nahi hai.</td></tr>';
+        } else {
+          allProdsBody.innerHTML = products.map(p => {
+            const shop = shops.find(s => String(s.id) === String(p.shopId)) || { shopName: (p.seller || 'Local Shop') };
+            const img = (p.images && p.images.length > 0) ? p.images[0] : (p.img || 'https://via.placeholder.com/60');
+            const price = p.pricePerUnit || p.pricePerKg || p.price || 0;
+            return `
+              <tr class="hover:bg-gray-50 border-b">
+                <td class="p-2">
+                  <img src="${img}" onclick="expandImage('${img}')" class="w-9 h-9 rounded-lg object-cover border cursor-pointer" />
+                </td>
+                <td class="p-2.5 font-bold text-gray-900">${p.title || p.name || 'Bazaar Item'}</td>
+                <td class="p-2.5 font-semibold text-brand-orange">${shop.shopName}</td>
+                <td class="p-2.5 font-black text-gray-900">₹${price}</td>
+                <td class="p-2.5 text-gray-500">${p.unitType || 'packet'}</td>
+                <td class="p-2.5 text-center">
+                  <button type="button" onclick="admDeleteSingleProduct('${p.id}')" class="text-red-500 hover:text-red-700 p-1 font-bold inline-flex items-center gap-1" title="Delete Product from Cloud">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i> Delete
+                  </button>
+                </td>
+              </tr>
+            `;
+          }).join('');
+        }
+      }
+
+      // 4. Master Orders Table
+      const orderBody = document.getElementById('admOrdersTableBody');
+      if (orderBody) {
+        if (!orders.length) {
+          orderBody.innerHTML = '<tr><td colspan="7" class="p-3 text-center text-gray-400">Abhi tak koi order nahi hua.</td></tr>';
+        } else {
+          orderBody.innerHTML = orders.slice().reverse().map(ord => {
+            const shop = shops.find(s => String(s.id) === String(ord.shopId)) || { shopName: 'Shop' };
+            const cut = (ord.adminFee !== undefined) 
+              ? Number(ord.adminFee).toFixed(2)
+              : (ord.totalAmount >= 150 ? (ord.totalAmount * 0.02).toFixed(2) : "0.00");
+
+            return `
+              <tr class="hover:bg-gray-50 border-b">
+                <td class="p-2.5 font-black text-brand-deepOrange">#${ord.pickupCode}</td>
+                <td class="p-2.5 font-bold text-gray-800">${shop.shopName}</td>
+                <td class="p-2.5">${ord.customerName} (${ord.customerPhone})</td>
+                <td class="p-2.5 font-black">₹${ord.totalAmount}</td>
+                <td class="p-2.5 font-black ${Number(cut) > 0 ? 'text-yellow-600' : 'text-green-600'}">
+                  ${Number(cut) > 0 ? '₹' + cut : '₹0'}
+                </td>
+                <td class="p-2.5">
+                  <span class="px-2 py-0.5 rounded text-[9px] font-bold uppercase ${ord.status === 'packed' ? 'bg-blue-100 text-blue-800' : ord.status === 'delivered' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">
+                    ${ord.status}
+                  </span>
+                </td>
+                <td class="p-2.5 text-gray-400 text-[10px]">${ord.createdAt || 'N/A'}</td>
+              </tr>
+            `;
+          }).join('');
+        }
+      }
+
+      renderAdminBannersTable();
+      updateAdminToggleUI();
+      lucide.createIcons();
+    }
+
     // Double Confirmation Clear Orders Engine
     async function admClearAllOrdersDoubleConfirm() {
       if (!orders.length) return alert("Clear karne ke liye koi order ledger data nahi hai.");
@@ -2271,27 +2457,6 @@
       }
     }
 
-    // Direct Single Shop & Seller Deletion by Admin
-    async function admDeleteShopAndSeller(shopId, ownerId) {
-      if (!confirm("Kya aap sach me is dukan aur iske seller ko cloud se delete karna chahte hain?")) return;
-
-      shops = shops.filter(s => String(s.id) !== String(shopId));
-      if (ownerId) users = users.filter(u => String(u.id) !== String(ownerId));
-
-      saveData();
-      renderShops(shops);
-      renderAdminDashboard();
-
-      try {
-        if (shopId) await db.collection("shops").doc(String(shopId)).delete();
-        if (ownerId) await db.collection("users").doc(String(ownerId)).delete();
-        alert("Dukan aur Seller Cloud Database se permanently delete ho gaye!");
-      } catch (e) {
-        console.error("Delete shop error:", e);
-        alert("Delete karte waqt error: " + e.message);
-      }
-    }
-
     async function admDeleteAllDummyProducts() {
       if (!confirm("Kya aap sabhi purane dummy items aur test products ko cloud se hatana chahte hain?")) return;
       
@@ -2299,39 +2464,28 @@
         const snap = await db.collection("products").get();
         const batch = db.batch();
         snap.forEach(doc => {
-          batch.delete(doc.ref);
+          const d = doc.data();
+          const name = (d.title || d.name || '').toLowerCase();
+          const seller = (d.seller || '').toLowerCase();
+          if (name.includes('rice') || name.includes('daal') || name.includes('gh') || seller.includes('dukan') || d.shopId === 'shop-1') {
+            batch.delete(doc.ref);
+          }
         });
         await batch.commit();
 
-        products = [];
+        products = products.filter(p => {
+          const t = (p.title || p.name || '').toLowerCase();
+          const s = (p.seller || '').toLowerCase();
+          return !t.includes('rice') && !t.includes('daal') && !t.includes('gh') && !s.includes('dukan');
+        });
+
         saveData();
         renderProducts(products);
         renderAdminDashboard();
-        alert("Sabhi products Firebase Cloud se delete kar diye gaye hain!");
+        alert("Saara dummy aur test data Firebase Cloud se delete kar diya gaya hai!");
       } catch (e) {
         console.error("Purge error:", e);
         alert("Clean karte waqt error: " + e.message);
-      }
-    }
-
-    async function admDeleteAllDummyShops() {
-      if (!confirm("DANGER: Kya aap sabhi dukanon ko Cloud se delete karna chahte hain? (Nayi fresh dukan banane ke liye)")) return;
-      
-      try {
-        const snap = await db.collection("shops").get();
-        const batch = db.batch();
-        snap.forEach(doc => {
-          batch.delete(doc.ref);
-        });
-        await batch.commit();
-
-        shops = [];
-        saveData();
-        renderShops(shops);
-        renderAdminDashboard();
-        alert("Sabhi purani dukaanein Cloud Database se clear ho gayi hain!");
-      } catch (e) {
-        console.error("Delete shops error:", e);
       }
     }
 
@@ -2551,36 +2705,33 @@
     }
 
     function switchAdminTab(subTab) {
-      const sections = ['admSectionUsers', 'admSectionSellers', 'admSectionAllProds', 'admSectionOrders', 'admSectionBanners', 'admSectionSettings'];
-      sections.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.classList.add('hidden');
+      ['admSectionUsers', 'admSectionSellers', 'admSectionAllProds', 'admSectionOrders', 'admSectionBanners', 'admSectionSettings'].forEach(id => {
+        document.getElementById(id).classList.add('hidden');
       });
-
-      const buttons = ['admTabBtnUsers', 'admTabBtnSellers', 'admTabBtnAllProds', 'admTabBtnOrders', 'admTabBtnBanners', 'admTabBtnSettings'];
-      buttons.forEach(id => {
+      ['admTabBtnUsers', 'admTabBtnSellers', 'admTabBtnAllProds', 'admTabBtnOrders', 'admTabBtnBanners', 'admTabBtnSettings'].forEach(id => {
         const btn = document.getElementById(id);
-        if (btn) {
-          btn.classList.remove('border-brand-orange', 'text-brand-orange');
-          btn.classList.add('border-transparent');
-        }
+        btn.classList.remove('border-brand-orange', 'text-brand-orange');
+        btn.classList.add('border-transparent');
       });
 
-      const targetMap = {
-        'users': { sec: 'admSectionUsers', btn: 'admTabBtnUsers' },
-        'sellers': { sec: 'admSectionSellers', btn: 'admTabBtnSellers' },
-        'allProds': { sec: 'admSectionAllProds', btn: 'admTabBtnAllProds' },
-        'orders': { sec: 'admSectionOrders', btn: 'admTabBtnOrders' },
-        'banners': { sec: 'admSectionBanners', btn: 'admTabBtnBanners' },
-        'settings': { sec: 'admSectionSettings', btn: 'admTabBtnSettings' }
-      };
-
-      const selected = targetMap[subTab];
-      if (selected) {
-        const secEl = document.getElementById(selected.sec);
-        const btnEl = document.getElementById(selected.btn);
-        if (secEl) secEl.classList.remove('hidden');
-        if (btnEl) btnEl.classList.add('border-brand-orange', 'text-brand-orange');
+      if (subTab === 'users') {
+        document.getElementById('admSectionUsers').classList.remove('hidden');
+        document.getElementById('admTabBtnUsers').classList.add('border-brand-orange', 'text-brand-orange');
+      } else if (subTab === 'sellers') {
+        document.getElementById('admSectionSellers').classList.remove('hidden');
+        document.getElementById('admTabBtnSellers').classList.add('border-brand-orange', 'text-brand-orange');
+      } else if (subTab === 'allProds') {
+        document.getElementById('admSectionAllProds').classList.remove('hidden');
+        document.getElementById('admTabBtnAllProds').classList.add('border-brand-orange', 'text-brand-orange');
+      } else if (subTab === 'orders') {
+        document.getElementById('admSectionOrders').classList.remove('hidden');
+        document.getElementById('admTabBtnOrders').classList.add('border-brand-orange', 'text-brand-orange');
+      } else if (subTab === 'banners') {
+        document.getElementById('admSectionBanners').classList.remove('hidden');
+        document.getElementById('admTabBtnBanners').classList.add('border-brand-orange', 'text-brand-orange');
+      } else if (subTab === 'settings') {
+        document.getElementById('admSectionSettings').classList.remove('hidden');
+        document.getElementById('admTabBtnSettings').classList.add('border-brand-orange', 'text-brand-orange');
       }
       lucide.createIcons();
     }
@@ -2609,16 +2760,25 @@
     }
 
     function exportSellersCSV() {
-      if (!shops.length && !users.some(u => u.role === 'shopkeeper')) {
-        return alert("Export karne ke liye koi seller data nahi hai.");
-      }
+      const sellersList = mergeUniqueById([], users.filter(u => u.role === 'shopkeeper'));
+      if (!sellersList.length) return alert("Export karne ke liye koi seller data nahi hai.");
 
-      let csv = "Shop ID,Shop Name,Owner Phone,Address,Status\n";
-      shops.forEach(s => {
-        const cleanAddr = `"${(s.address || '').replace(/"/g, '""')}"`;
-        csv += `"${s.id}","${s.shopName}","${s.phone || ''}",${cleanAddr},"${s.isOpen ? 'Open' : 'Closed'}"\n`;
+      let csv = "Seller ID,Owner Name,Shop Name,Phone,Email,Shop Address,Total Delivered Sales (INR),Admin Fee Due (2% INR),Shop Status\n";
+      sellersList.forEach(sel => {
+        const shop = shops.find(s => String(s.ownerId) === String(sel.id) || String(s.id) === String(sel.shopId)) || { shopName: 'Shop', isOpen: false, address: sel.address, id: 'unknown' };
+        const selOrders = orders.filter(o => String(o.shopId) === String(shop.id) && o.status === 'delivered');
+        const sellerTotalSales = selOrders.reduce((s, o) => s + Number(o.totalAmount || 0), 0);
+        const sellerAdminDue = selOrders.reduce((s, o) => {
+          const fee = (o.adminFee !== undefined) 
+            ? Number(o.adminFee) 
+            : (o.totalAmount >= 150 ? Number(o.totalAmount * 0.02) : 0);
+          return s + fee;
+        }, 0);
+        const cleanAddr = `"${(shop.address || '').replace(/"/g, '""')}"`;
+
+        csv += `"${sel.id}","${sel.name}","${shop.shopName}","${sel.phone}","${sel.email || ''}",${cleanAddr},"${sellerTotalSales}","${sellerAdminDue.toFixed(2)}","${shop.isOpen ? 'Open' : 'Closed'}"\n`;
       });
-      downloadCSVFile("sellers_and_shops_data.csv", csv);
+      downloadCSVFile("sellers_and_commission_data.csv", csv);
     }
 
     function exportOrdersCSV() {
@@ -2639,7 +2799,7 @@
     }
 
     function exportAllCSV() {
-      if (!orders.length && !users.length && !shops.length) return alert("Koi data uplabdh nahi hai.");
+      if (!orders.length && !users.length) return alert("Koi data uplabdh nahi hai.");
       
       let fullCSV = "=== BHALLEGAON BAGWAN BAZAAR COMPLETE DATABASE BACKUP ===\n\n";
 
@@ -2655,11 +2815,19 @@
         fullCSV += `"${ord.id}","${ord.pickupCode}","${shop.shopName}","${ord.customerName}","${ord.customerPhone}",${cleanAddr},${itemsTxt},"${ord.totalAmount}","${cut}","${ord.status}","${ord.createdAt || ''}"\n`;
       });
 
-      fullCSV += "\n--- SHOPS DIRECTORY ---\n";
-      fullCSV += "Shop ID,Shop Name,Phone,Address,Status\n";
-      shops.forEach(s => {
-        const cleanAddr = `"${(s.address || '').replace(/"/g, '""')}"`;
-        fullCSV += `"${s.id}","${s.shopName}","${s.phone || ''}",${cleanAddr},"${s.isOpen ? 'Open' : 'Closed'}"\n`;
+      fullCSV += "\n--- SELLERS DIRECTORY ---\n";
+      fullCSV += "Seller ID,Owner Name,Shop Name,Phone,Total Sales (INR),Admin Due 2% (INR),Status\n";
+      mergeUniqueById([], users.filter(u => u.role === 'shopkeeper')).forEach(sel => {
+        const shop = shops.find(s => String(s.ownerId) === String(sel.id) || String(s.id) === String(sel.shopId)) || { shopName: 'Shop', isOpen: false, id: 'unknown' };
+        const selOrders = orders.filter(o => String(o.shopId) === String(shop.id) && o.status === 'delivered');
+        const sales = selOrders.reduce((s, o) => s + Number(o.totalAmount || 0), 0);
+        const due = selOrders.reduce((s, o) => {
+          const fee = (o.adminFee !== undefined) 
+            ? Number(o.adminFee) 
+            : (o.totalAmount >= 150 ? Number(o.totalAmount * 0.02) : 0);
+          return s + fee;
+        }, 0);
+        fullCSV += `"${sel.id}","${sel.name}","${shop.shopName}","${sel.phone}","${sales}","${due.toFixed(2)}","${shop.isOpen ? 'Open' : 'Closed'}"\n`;
       });
 
       fullCSV += "\n--- CUSTOMERS DIRECTORY ---\n";
@@ -2667,6 +2835,12 @@
       mergeUniqueById([], users.filter(u => u.role === 'customer')).forEach(c => {
         const cleanAddr = `"${(c.address || '').replace(/"/g, '""')}"`;
         fullCSV += `"${c.id}","${c.name}","${c.phone}","${c.email || ''}",${cleanAddr}\n`;
+      });
+
+      fullCSV += "\n--- AD BANNERS COMMERCIALS (₹300/DAY) ---\n";
+      fullCSV += "Banner ID,Sponsor,Phone,Title,Days,Total (INR),Start Date,End Date\n";
+      adBanners.forEach(b => {
+        fullCSV += `"${b.id}","${b.sponsor || ''}","${b.phone || ''}","${b.title}","${b.days}","${b.totalCharge}","${new Date(b.startDate).toLocaleDateString()}","${new Date(b.endDate).toLocaleDateString()}"\n`;
       });
 
       downloadCSVFile(`bhallegaon_bazaar_full_backup_${Date.now()}.csv`, fullCSV);
@@ -2733,188 +2907,17 @@
 
     function logoutAdmin() {
       adminToken = false;
-      const pinSec = document.getElementById('adminPinSection');
-      const ctrlSec = document.getElementById('adminControlSection');
-      if (pinSec) pinSec.classList.remove('hidden');
-      if (ctrlSec) ctrlSec.classList.add('hidden');
-      const pwdInput = document.getElementById('adminPasswordInput');
-      if (pwdInput) pwdInput.value = '';
+      document.getElementById('adminPinSection').classList.remove('hidden');
+      document.getElementById('adminControlSection').classList.add('hidden');
+      document.getElementById('adminPasswordInput').value = '';
       closeAdminModal();
       applyMaintenanceView();
-    }
-
-    function openAdminModal() { 
-      const modal = document.getElementById('adminModal');
-      if (modal) modal.classList.remove('hidden'); 
-    }
-
-    function closeAdminModal() { 
-      const modal = document.getElementById('adminModal');
-      if (modal) modal.classList.add('hidden'); 
     }
 
     function openAuthModal() { document.getElementById('authModal').classList.remove('hidden'); }
     function closeAuthModal() { document.getElementById('authModal').classList.add('hidden'); }
     function openAddProductModal() { document.getElementById('addProductModal').classList.remove('hidden'); }
     function closeAddProductModal() { document.getElementById('addProductModal').classList.add('hidden'); }
-
-    // Admin Render Master Function
-    function renderAdminDashboard() {
-      const deliveredOrders = orders.filter(o => o.status === 'delivered');
-      const totalSales = deliveredOrders.reduce((sum, o) => sum + Number(o.totalAmount || 0), 0);
-      const totalAdminCut = deliveredOrders.reduce((sum, o) => {
-        const fee = (o.adminFee !== undefined) 
-          ? Number(o.adminFee) 
-          : (o.totalAmount >= 150 ? Number(o.totalAmount * 0.02) : 0);
-        return sum + fee;
-      }, 0);
-
-      const totalAdRevenue = adBanners.reduce((sum, b) => sum + Number(b.totalCharge || 0), 0);
-
-      const elRev = document.getElementById('kpiTotalRevenue');
-      if (elRev) elRev.innerText = '₹' + totalSales;
-
-      const elAdm = document.getElementById('kpiAdminEarnings');
-      if (elAdm) elAdm.innerText = '₹' + totalAdminCut.toFixed(2);
-
-      const elAdRev = document.getElementById('kpiAdEarnings');
-      if (elAdRev) elAdRev.innerText = '₹' + totalAdRevenue;
-
-      const elOrders = document.getElementById('kpiTotalOrders');
-      if (elOrders) elOrders.innerText = orders.length;
-
-      const elShops = document.getElementById('kpiActiveShops');
-      if (elShops) elShops.innerText = shops.filter(s => s.isOpen).length;
-
-      // 1. Customers Table
-      const custBody = document.getElementById('admCustomersTableBody');
-      const customersList = mergeUniqueById([], users.filter(u => u.role === 'customer'));
-      if (custBody) {
-        if (!customersList.length) {
-          custBody.innerHTML = '<tr><td colspan="6" class="p-3 text-center text-gray-400">Koi registered customer nahi hai.</td></tr>';
-        } else {
-          custBody.innerHTML = customersList.map(c => `
-            <tr class="hover:bg-gray-50 border-b">
-              <td class="p-2 text-center">
-                <img src="${c.profilePic || 'https://via.placeholder.com/40'}" onclick="expandImage('${c.profilePic}')" class="w-8 h-8 rounded-full object-cover border mx-auto cursor-pointer shadow-sm hover:scale-110 transition" title="Bade size me dekhein" />
-              </td>
-              <td class="p-2.5 font-bold text-gray-900">${c.name}</td>
-              <td class="p-2.5 text-gray-600">${c.phone}</td>
-              <td class="p-2.5 text-gray-500">${c.email || 'N/A'}</td>
-              <td class="p-2.5 text-gray-500 max-w-xs truncate">${c.address}</td>
-              <td class="p-2.5 text-center">
-                <button type="button" onclick="admDeleteUser('${c.id}')" class="text-red-500 hover:text-red-700 p-1" title="Delete User">
-                  <i data-lucide="trash-2" class="w-4 h-4"></i>
-                </button>
-              </td>
-            </tr>
-          `).join('');
-        }
-      }
-
-      // 2. Sellers & Shops Table WITH DIRECT ACTION BUTTON
-      const sellerBody = document.getElementById('admSellersTableBody');
-      if (sellerBody) {
-        if (!shops.length) {
-          sellerBody.innerHTML = '<tr><td colspan="7" class="p-3 text-center text-gray-400">Database me koi dukan nahi hai.</td></tr>';
-        } else {
-          sellerBody.innerHTML = shops.map(s => {
-            const owner = users.find(u => String(u.id) === String(s.ownerId)) || { name: 'Owner', profilePic: 'https://via.placeholder.com/40' };
-            const selOrders = orders.filter(o => String(o.shopId) === String(s.id) && o.status === 'delivered');
-            const totalShopSales = selOrders.reduce((sum, o) => sum + Number(o.totalAmount || 0), 0);
-            const totalDue = selOrders.reduce((sum, o) => {
-              const fee = (o.adminFee !== undefined) ? Number(o.adminFee) : (o.totalAmount >= 150 ? Number(o.totalAmount * 0.02) : 0);
-              return sum + fee;
-            }, 0);
-
-            return `
-              <tr class="hover:bg-gray-50 border-b">
-                <td class="p-2 text-center">
-                  <img src="${owner.profilePic || 'https://via.placeholder.com/40'}" class="w-8 h-8 rounded-full object-cover border mx-auto" />
-                </td>
-                <td class="p-2.5 font-black text-brand-orange">${s.shopName}</td>
-                <td class="p-2.5 font-bold text-gray-900">${owner.name} (${s.phone || 'N/A'})</td>
-                <td class="p-2.5 text-gray-500 max-w-xs truncate">${s.address || 'N/A'}</td>
-                <td class="p-2.5 font-black text-gray-800">₹${totalShopSales}</td>
-                <td class="p-2.5 font-black text-red-600">₹${totalDue.toFixed(2)}</td>
-                <td class="p-2.5 text-center">
-                  <button type="button" onclick="admDeleteShopAndSeller('${s.id}', '${s.ownerId || ''}')" class="bg-red-50 hover:bg-red-100 text-red-600 font-bold px-2 py-1 rounded text-xs inline-flex items-center gap-1 transition" title="Delete Shop from Cloud">
-                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Delete Shop
-                  </button>
-                </td>
-              </tr>
-            `;
-          }).join('');
-        }
-      }
-
-      // 3. Admin All Products Master Table
-      const allProdsBody = document.getElementById('admAllProductsTableBody');
-      if (allProdsBody) {
-        if (!products.length) {
-          allProdsBody.innerHTML = '<tr><td colspan="6" class="p-3 text-center text-gray-400">Database me koi product nahi hai.</td></tr>';
-        } else {
-          allProdsBody.innerHTML = products.map(p => {
-            const shop = shops.find(s => String(s.id) === String(p.shopId)) || { shopName: (p.seller || 'Local Shop') };
-            const img = (p.images && p.images.length > 0) ? p.images[0] : (p.img || 'https://via.placeholder.com/60');
-            const price = p.pricePerUnit || p.pricePerKg || p.price || 0;
-            return `
-              <tr class="hover:bg-gray-50 border-b">
-                <td class="p-2">
-                  <img src="${img}" onclick="expandImage('${img}')" class="w-9 h-9 rounded-lg object-cover border cursor-pointer" />
-                </td>
-                <td class="p-2.5 font-bold text-gray-900">${p.title || p.name || 'Bazaar Item'}</td>
-                <td class="p-2.5 font-semibold text-brand-orange">${shop.shopName}</td>
-                <td class="p-2.5 font-black text-gray-900">₹${price}</td>
-                <td class="p-2.5 text-gray-500">${p.unitType || 'packet'}</td>
-                <td class="p-2.5 text-center">
-                  <button type="button" onclick="admDeleteSingleProduct('${p.id}')" class="text-red-500 hover:text-red-700 p-1 font-bold inline-flex items-center gap-1" title="Delete Product from Cloud">
-                    <i data-lucide="trash-2" class="w-4 h-4"></i> Delete
-                  </button>
-                </td>
-              </tr>
-            `;
-          }).join('');
-        }
-      }
-
-      // 4. Master Orders Table
-      const orderBody = document.getElementById('admOrdersTableBody');
-      if (orderBody) {
-        if (!orders.length) {
-          orderBody.innerHTML = '<tr><td colspan="7" class="p-3 text-center text-gray-400">Abhi tak koi order nahi hua.</td></tr>';
-        } else {
-          orderBody.innerHTML = orders.slice().reverse().map(ord => {
-            const shop = shops.find(s => String(s.id) === String(ord.shopId)) || { shopName: 'Shop' };
-            const cut = (ord.adminFee !== undefined) 
-              ? Number(ord.adminFee).toFixed(2)
-              : (ord.totalAmount >= 150 ? (ord.totalAmount * 0.02).toFixed(2) : "0.00");
-
-            return `
-              <tr class="hover:bg-gray-50 border-b">
-                <td class="p-2.5 font-black text-brand-deepOrange">#${ord.pickupCode}</td>
-                <td class="p-2.5 font-bold text-gray-800">${shop.shopName}</td>
-                <td class="p-2.5">${ord.customerName} (${ord.customerPhone})</td>
-                <td class="p-2.5 font-black">₹${ord.totalAmount}</td>
-                <td class="p-2.5 font-black ${Number(cut) > 0 ? 'text-yellow-600' : 'text-green-600'}">
-                  ${Number(cut) > 0 ? '₹' + cut : '₹0'}
-                </td>
-                <td class="p-2.5">
-                  <span class="px-2 py-0.5 rounded text-[9px] font-bold uppercase ${ord.status === 'packed' ? 'bg-blue-100 text-blue-800' : ord.status === 'delivered' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">
-                    ${ord.status}
-                  </span>
-                </td>
-                <td class="p-2.5 text-gray-400 text-[10px]">${ord.createdAt || 'N/A'}</td>
-              </tr>
-            `;
-          }).join('');
-        }
-      }
-
-      renderAdminBannersTable();
-      updateAdminToggleUI();
-      lucide.createIcons();
-    }
   </script>
 </body>
 </html>
