@@ -576,7 +576,7 @@
             </div>
           </div>
 
-          <!-- NEW: ALL PRODUCTS & CLOUD CLEANUP SECTION FOR ADMIN -->
+          <!-- ALL PRODUCTS & CLOUD CLEANUP SECTION FOR ADMIN -->
           <div id="admSectionAllProds" class="hidden space-y-3">
             <div class="flex flex-wrap justify-between items-center gap-2">
               <div>
@@ -604,13 +604,18 @@
             </div>
           </div>
 
-          <!-- Master Orders Ledger -->
+          <!-- MASTER ORDERS LEDGER WITH DOUBLE-CONFIRMATION CLEAR BUTTON -->
           <div id="admSectionOrders" class="hidden space-y-3">
-            <div class="flex justify-between items-center">
+            <div class="flex flex-wrap justify-between items-center gap-2">
               <h4 class="text-xs font-black text-gray-700 uppercase tracking-wide">Master Order History & Commissions Breakdown</h4>
-              <button onclick="exportOrdersCSV()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-3 py-1 rounded-lg text-xs flex items-center gap-1 shadow transition">
-                <i data-lucide="download" class="w-3.5 h-3.5"></i> Orders CSV Download
-              </button>
+              <div class="flex items-center gap-2">
+                <button onclick="exportOrdersCSV()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-3 py-1.5 rounded-xl text-xs flex items-center gap-1 shadow transition">
+                  <i data-lucide="download" class="w-3.5 h-3.5"></i> Orders CSV Download
+                </button>
+                <button onclick="admClearAllOrdersDoubleConfirm()" class="bg-rose-600 hover:bg-rose-700 text-white font-bold px-3 py-1.5 rounded-xl text-xs flex items-center gap-1 shadow transition" title="Clear orders after saving CSV">
+                  <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Clear All Orders Ledger
+                </button>
+              </div>
             </div>
             <div class="border rounded-xl overflow-x-auto shadow-sm">
               <table class="w-full text-left text-xs min-w-[850px]">
@@ -935,7 +940,6 @@
       return s.slice(-10);
     }
 
-    // Zero default dummy state
     let appSettings = JSON.parse(localStorage.getItem('bb_settings')) || { maintenanceMode: false, showSellerPhone: true };
     let users = JSON.parse(localStorage.getItem('bb_users')) || [];
     let shops = JSON.parse(localStorage.getItem('bb_shops')) || [];
@@ -2161,7 +2165,6 @@
       document.getElementById('accEditAddress').value = currentUser.address || '';
     }
 
-    // --- PROFILE PHOTO CHANGE FROM BROWSER ---
     function handleProfilePhotoChange(e) {
       const file = e.target.files[0];
       if (!file || !currentUser) return;
@@ -2408,7 +2411,37 @@
       lucide.createIcons();
     }
 
-    // Direct Admin Product Deletion
+    // Double Confirmation Clear Orders Engine
+    async function admClearAllOrdersDoubleConfirm() {
+      if (!orders.length) return alert("Clear karne ke liye koi order ledger data nahi hai.");
+
+      const confirm1 = confirm("ADMIN NOTICE (1/2):\nKya aap sach me sabhi orders aur revenue ledger ko clear karna chahte hain?\n\nSalah: Agar aapne CSV report download nahi ki hai toh pehle download kar lein.");
+      if (!confirm1) return;
+
+      const confirm2 = confirm("FINAL WARNING (2/2):\nKya aap bilkul pakka hain?\n\nYeh saara data Firestore Cloud Database aur portal se permanently delete ho jayega aur wapas nahi aayega.");
+      if (!confirm2) return;
+
+      try {
+        const snap = await db.collection("orders").get();
+        const batch = db.batch();
+        snap.forEach(doc => {
+          batch.delete(doc.ref);
+        });
+        await batch.commit();
+
+        orders = [];
+        saveData();
+        renderAdminDashboard();
+        if (currentUser && currentUser.role === 'customer') loadCustomerOrders();
+        if (currentUser && currentUser.role === 'shopkeeper') loadSellerDashboard();
+
+        alert("Sabhi orders cloud se safaltapoorvak clear kar diye gaye hain!");
+      } catch (err) {
+        console.error("Clear orders error:", err);
+        alert("Orders clear karte waqt error aaya: " + err.message);
+      }
+    }
+
     async function admDeleteSingleProduct(productId) {
       if (!confirm("Kya aap sach me is product ko Firebase Cloud se permanently delete karna chahte hain?")) return;
       products = products.filter(p => String(p.id) !== String(productId));
@@ -2424,7 +2457,6 @@
       }
     }
 
-    // Purge All Test / Dummy Items
     async function admDeleteAllDummyProducts() {
       if (!confirm("Kya aap sabhi purane dummy items aur test products ko cloud se hatana chahte hain?")) return;
       
@@ -2435,7 +2467,6 @@
           const d = doc.data();
           const name = (d.title || d.name || '').toLowerCase();
           const seller = (d.seller || '').toLowerCase();
-          // Target dummy items like 'Dukan 1', 'Bhallegaon Shop', 'Pahadi Basmati Rice', etc.
           if (name.includes('rice') || name.includes('daal') || name.includes('gh') || seller.includes('dukan') || d.shopId === 'shop-1') {
             batch.delete(doc.ref);
           }
