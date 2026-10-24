@@ -1,0 +1,2614 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BHALLEGAON - BAGWAN BAZAAR</title>
+  <!-- Tailwind CSS & Lucide Icons -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Firebase App & Cloud Firestore SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              orange: '#FF7A00',
+              deepOrange: '#E65100',
+              green: '#16A34A',
+              whatsapp: '#25D366',
+              dark: '#0F172A'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .shop-closed-filter {
+      filter: grayscale(100%);
+      opacity: 0.6;
+    }
+    ::-webkit-scrollbar {
+      height: 6px;
+      width: 6px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans min-h-screen flex flex-col justify-between">
+
+  <!-- Maintenance Mode Screen -->
+  <div id="maintenanceScreen" class="hidden fixed inset-0 z-50 bg-white flex flex-col items-center justify-center p-6 text-center">
+    <div class="w-20 h-20 bg-orange-100 text-brand-orange rounded-full flex items-center justify-center mb-4 shadow-inner">
+      <i data-lucide="wrench" class="w-10 h-10"></i>
+    </div>
+    <h1 class="text-2xl md:text-3xl font-black text-gray-900 mb-2">BHALLEGAON - BAGWAN BAZAAR</h1>
+    <p class="text-gray-600 max-w-md text-sm">Website abhi maintenance me hai. Hum jald hi wapas public honge!</p>
+    <div class="mt-8">
+      <button onclick="openAdminModal()" class="text-xs text-gray-400 hover:text-gray-600 underline">Admin Login</button>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header class="bg-gradient-to-r from-brand-deepOrange to-brand-orange text-white shadow sticky top-0 z-40">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center space-x-2 cursor-pointer" onclick="navigateTab('home')">
+        <i data-lucide="shopping-bag" class="w-7 h-7 text-yellow-300"></i>
+        <div>
+          <h1 class="text-lg font-black tracking-wide leading-tight">BHALLEGAON</h1>
+          <p class="text-[10px] font-bold text-yellow-200">BAGWAN BAZAAR</p>
+        </div>
+      </div>
+      <div class="flex items-center space-x-3">
+        <button onclick="navigateTab('cart')" class="relative p-2 rounded-full hover:bg-orange-600 transition">
+          <i data-lucide="shopping-cart" class="w-5 h-5"></i>
+          <span id="cartCountBadge" class="hidden absolute top-0 right-0 bg-green-500 text-white font-bold text-[10px] rounded-full w-4 h-4 flex items-center justify-center">0</span>
+        </button>
+        <div id="headerAuthNav">
+          <button onclick="openAuthModal()" class="bg-white text-brand-deepOrange px-3 py-1 rounded-full font-bold text-xs shadow hover:bg-yellow-100 transition">
+            Login / Register
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Navigation Tabs -->
+  <nav class="bg-white border-b sticky top-14 z-30 shadow-sm">
+    <div class="max-w-6xl mx-auto px-4 flex justify-around">
+      <button onclick="navigateTab('home')" class="nav-btn py-3 text-xs md:text-sm font-bold border-b-2 border-brand-orange text-brand-orange flex items-center gap-1" id="tabHome">
+        <i data-lucide="home" class="w-4 h-4"></i> Home
+      </button>
+      <button onclick="navigateTab('shops')" class="nav-btn py-3 text-xs md:text-sm font-semibold text-gray-500 hover:text-brand-orange border-b-2 border-transparent flex items-center gap-1" id="tabShops">
+        <i data-lucide="store" class="w-4 h-4"></i> Shops
+      </button>
+      <button onclick="navigateTab('orders')" class="nav-btn py-3 text-xs md:text-sm font-semibold text-gray-500 hover:text-brand-orange border-b-2 border-transparent flex items-center gap-1" id="tabOrders">
+        <i data-lucide="receipt" class="w-4 h-4"></i> My Orders
+      </button>
+      <button onclick="navigateTab('account')" class="nav-btn py-3 text-xs md:text-sm font-semibold text-gray-500 hover:text-brand-orange border-b-2 border-transparent flex items-center gap-1" id="tabAccount">
+        <i data-lucide="user" class="w-4 h-4"></i> Account
+      </button>
+      <button onclick="navigateTab('seller')" id="sellerTabBtn" class="hidden nav-btn py-3 text-xs md:text-sm font-semibold text-gray-500 hover:text-brand-orange border-b-2 border-transparent flex items-center gap-1">
+        <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Dukan Dashboard
+      </button>
+    </div>
+  </nav>
+
+  <!-- Main View -->
+  <main class="max-w-6xl mx-auto px-4 py-6 w-full flex-1">
+    
+    <!-- HOME TAB -->
+    <section id="viewHome">
+      <div class="mb-4 flex flex-col md:flex-row gap-3 items-center justify-between">
+        <div class="relative w-full md:w-96">
+          <input type="text" id="searchInput" oninput="handleSearch()" placeholder="Item ya dukan ka naam khojein..." class="w-full pl-9 pr-4 py-2 border rounded-full text-xs focus:outline-none focus:ring-2 focus:ring-brand-orange shadow-sm" />
+          <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3 top-2.5"></i>
+        </div>
+        <div class="bg-yellow-100 border border-yellow-300 text-yellow-800 text-xs px-3.5 py-2 rounded-xl flex items-center gap-2 shadow-sm w-full md:w-auto">
+          <i data-lucide="clock" class="w-4 h-4 flex-shrink-0"></i>
+          <span>Min. Order: <b>₹100</b> | Shaam <b>6:00 PM</b> se pehle saman collect karein.</span>
+        </div>
+      </div>
+
+      <!-- SPONSORED ADVERTISEMENT BANNER CAROUSEL -->
+      <div id="homeAdBannerContainer" 
+           onmouseenter="pauseAdSlide()" 
+           onmouseleave="resumeAdSlide()" 
+           ontouchstart="pauseAdSlide()" 
+           ontouchend="resumeAdSlideDelayed()"
+           class="relative mb-6 overflow-hidden rounded-3xl shadow-md border border-gray-200 bg-gray-900 group select-none">
+      </div>
+
+      <!-- Products Grid -->
+      <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
+    </section>
+
+    <!-- SHOPS TAB -->
+    <section id="viewShops" class="hidden">
+      <h2 class="text-base font-black mb-4 flex items-center gap-2">
+        <i data-lucide="store" class="text-brand-orange"></i> Bhallegaon Ki Dukaanein
+      </h2>
+      <div id="shopsListContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+    </section>
+
+    <!-- CART TAB -->
+    <section id="viewCart" class="hidden">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-base font-black flex items-center gap-2">
+          <i data-lucide="shopping-cart" class="text-brand-orange"></i> Aapka Bazaar Bag
+        </h2>
+        <span class="text-xs bg-orange-100 text-brand-deepOrange font-bold px-2.5 py-1 rounded-full">Min. Order: ₹100 per shop</span>
+      </div>
+      <div id="cartContentWrapper" class="space-y-6"></div>
+    </section>
+
+    <!-- ORDERS TAB -->
+    <section id="viewOrders" class="hidden">
+      <h2 class="text-base font-black mb-4 flex items-center gap-2">
+        <i data-lucide="receipt" class="text-brand-orange"></i> Mere Orders & 6-Digit Pickup Codes
+      </h2>
+      <div id="customerOrdersContainer" class="space-y-4"></div>
+    </section>
+
+    <!-- ACCOUNT TAB -->
+    <section id="viewAccount" class="hidden">
+      <div class="max-w-md mx-auto bg-white p-6 rounded-2xl shadow border">
+        <div class="flex items-center gap-4 border-b pb-4 mb-4">
+          <img id="accAvatar" src="https://via.placeholder.com/80" onclick="expandImage(this.src)" class="w-16 h-16 rounded-full object-cover border-2 border-brand-orange shadow-sm cursor-pointer hover:opacity-80 transition" title="Click to view large photo" />
+          <div>
+            <h3 id="accName" class="font-extrabold text-sm text-gray-900">Name</h3>
+            <p id="accPhone" class="text-xs text-gray-500">Phone</p>
+            <span id="accRoleBadge" class="inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-orange-100 text-brand-orange">Role</span>
+          </div>
+        </div>
+        <form onsubmit="handleProfileUpdate(event)" class="space-y-3">
+          <div>
+            <label class="block text-xs font-bold text-gray-700 mb-1">Poora Naam</label>
+            <input type="text" id="accEditName" class="w-full p-2 border rounded-lg text-xs" required />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-gray-700 mb-1">Email</label>
+            <input type="email" id="accEditEmail" class="w-full p-2 border rounded-lg text-xs" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-gray-700 mb-1">Address</label>
+            <textarea id="accEditAddress" rows="2" class="w-full p-2 border rounded-lg text-xs" required></textarea>
+          </div>
+          <button type="submit" class="w-full bg-brand-orange text-white py-2 rounded-xl font-bold text-xs shadow hover:bg-orange-600 transition">Profile Update Karein</button>
+        </form>
+        <button onclick="handleLogout()" class="mt-4 w-full text-center text-xs text-red-500 font-bold hover:underline">Logout</button>
+      </div>
+    </section>
+
+    <!-- SELLER DASHBOARD -->
+    <section id="viewSeller" class="hidden">
+      <div class="bg-white p-4 rounded-xl shadow-sm border mb-4 flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h2 id="sellerShopTitle" class="text-base font-black text-gray-900">Dukan Dashboard</h2>
+          <p id="sellerShopAddress" class="text-xs text-gray-500">Address</p>
+        </div>
+        <div class="flex items-center gap-4">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-bold" id="shopStatusText">Dukaan Khuli Hai</span>
+            <button id="shopToggleBtn" onclick="toggleShopStatus()" class="relative inline-flex h-6 w-11 items-center rounded-full bg-green-500 transition">
+              <span id="shopToggleCircle" class="inline-block h-4 w-4 transform rounded-full bg-white transition translate-x-6"></span>
+            </button>
+          </div>
+          <button onclick="openAddProductModal()" class="bg-brand-green text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 shadow hover:bg-green-700 transition">
+            <i data-lucide="plus-circle" class="w-4 h-4"></i> Naya Item Jodein
+          </button>
+        </div>
+      </div>
+
+      <!-- Tip -->
+      <div class="bg-amber-50 border border-amber-200 text-amber-800 text-xs p-3 rounded-2xl mb-4 flex items-center gap-2.5 shadow-sm">
+        <i data-lucide="pen-tool" class="w-5 h-5 text-amber-600 flex-shrink-0"></i>
+        <span><b>Dukaandaar Tip (No Printer Needed):</b> Saman pack karke thele par marker pen se bada-bada <b>Customer Name</b> aur <b>6-Digit Code</b> likh dein.</span>
+      </div>
+
+      <!-- Seller Analytics & Admin Due Card -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+        <div class="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 p-3.5 rounded-2xl shadow-sm">
+          <div class="flex justify-between items-center text-green-700 text-xs font-bold mb-1">
+            <span>Aaj Ki Kul Sale (Today)</span>
+            <i data-lucide="calendar" class="w-4 h-4"></i>
+          </div>
+          <p id="sellerTodaySale" class="text-xl font-black text-green-900">₹0</p>
+          <span class="text-[10px] text-green-600">Delivered orders ka sum</span>
+        </div>
+
+        <div class="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 p-3.5 rounded-2xl shadow-sm">
+          <div class="flex justify-between items-center text-blue-700 text-xs font-bold mb-1">
+            <span>Is Mahine Ki Sale (Month)</span>
+            <i data-lucide="trending-up" class="w-4 h-4"></i>
+          </div>
+          <p id="sellerMonthSale" class="text-xl font-black text-blue-900">₹0</p>
+          <span class="text-[10px] text-blue-600">Current calendar month</span>
+        </div>
+
+        <div class="bg-gradient-to-br from-red-50 to-red-100 border border-red-200 p-3.5 rounded-2xl shadow-sm">
+          <div class="flex justify-between items-center text-red-700 text-xs font-bold mb-1">
+            <span>Admin Ko Dene Hain (2%)</span>
+            <i data-lucide="wallet" class="w-4 h-4"></i>
+          </div>
+          <p id="sellerAdminDue" class="text-xl font-black text-red-800">₹0</p>
+          <span class="text-[10px] text-red-600">≥ ₹150 ke orders par 2% fee (Below ₹150: Free)</span>
+        </div>
+      </div>
+
+      <!-- Tabular format orders for Seller -->
+      <h3 class="text-sm font-black text-gray-800 mb-3 flex items-center gap-1">
+        <i data-lucide="list-ordered" class="w-4 h-4 text-brand-orange"></i> Live Customer Orders (Table)
+      </h3>
+      <div class="bg-white rounded-xl shadow border overflow-x-auto mb-8">
+        <table class="w-full text-left text-xs border-collapse min-w-[850px]">
+          <thead class="bg-gray-100 uppercase text-gray-600 border-b">
+            <tr>
+              <th class="p-3">6-Digit Code</th>
+              <th class="p-3">Customer</th>
+              <th class="p-3">Phone</th>
+              <th class="p-3">Address</th>
+              <th class="p-3">Items & Quantity</th>
+              <th class="p-3">Order Amount</th>
+              <th class="p-3">Admin Fee (2%)</th>
+              <th class="p-3">Current Status</th>
+              <th class="p-3 text-center">Action / Update</th>
+            </tr>
+          </thead>
+          <tbody id="sellerOrdersTableBody" class="divide-y divide-gray-100"></tbody>
+        </table>
+      </div>
+
+      <!-- Seller Products List -->
+      <h3 class="text-sm font-black text-gray-800 mb-3">Dukan Par Maujood Items</h3>
+      <div id="sellerProductsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"></div>
+    </section>
+
+  </main>
+
+  <!-- Footer with Discreet Admin Lock Button -->
+  <footer class="bg-gray-900 text-gray-400 py-4 border-t border-gray-800 text-xs">
+    <div class="max-w-6xl mx-auto px-4 flex justify-between items-center">
+      <p><b class="text-white">BHALLEGAON - BAGWAN BAZAAR</b> &copy; 2026. Local Click & Collect Store.</p>
+      <button onclick="openAdminModal()" class="w-5 h-5 bg-gray-800 hover:bg-gray-700 rounded-full flex items-center justify-center opacity-30 hover:opacity-100 transition" title="Portal Admin">
+        <i data-lucide="lock" class="w-3 h-3 text-gray-400"></i>
+      </button>
+    </div>
+  </footer>
+
+  <!-- ================= MODALS ================= -->
+
+  <!-- Modal: Banner Interactive Pinch & Zoom Modal -->
+  <div id="bannerZoomModal" class="hidden fixed inset-0 bg-black/90 z-[80] flex flex-col items-center justify-center p-3 select-none backdrop-blur-sm">
+    <div class="absolute top-4 right-4 flex items-center gap-2 z-20">
+      <button onclick="zoomBannerStep(0.25)" class="w-9 h-9 rounded-full bg-white/20 hover:bg-white/40 text-white flex items-center justify-center text-sm font-bold shadow" title="Zoom In">
+        <i data-lucide="zoom-in" class="w-5 h-5"></i>
+      </button>
+      <button onclick="zoomBannerStep(-0.25)" class="w-9 h-9 rounded-full bg-white/20 hover:bg-white/40 text-white flex items-center justify-center text-sm font-bold shadow" title="Zoom Out">
+        <i data-lucide="zoom-out" class="w-5 h-5"></i>
+      </button>
+      <button onclick="resetBannerZoom()" class="px-2.5 h-9 rounded-full bg-white/20 hover:bg-white/40 text-white flex items-center justify-center text-xs font-bold shadow">
+        1x Reset
+      </button>
+      <button onclick="closeBannerZoomModal()" class="w-9 h-9 rounded-full bg-red-600 hover:bg-red-700 text-white flex items-center justify-center shadow">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+    </div>
+
+    <div id="bannerZoomViewport" class="w-full h-full flex items-center justify-center overflow-hidden cursor-grab active:cursor-grabbing">
+      <img id="bannerZoomImg" src="" class="max-w-[95%] max-h-[85vh] object-contain rounded-2xl shadow-2xl transition-transform duration-75 origin-center pointer-events-auto" draggable="false" />
+    </div>
+    <p class="text-gray-400 text-[11px] pb-2 text-center pointer-events-none">
+      Pinch/Scroll to Zoom • Hold & Drag to Move • Tap Reset to Normal
+    </p>
+  </div>
+
+  <!-- Standard Lightbox Modal for Products & Profiles -->
+  <div id="imageLightboxModal" class="hidden fixed inset-0 bg-black/80 z-[70] flex items-center justify-center p-4" onclick="closeImageLightbox()">
+    <div class="relative max-w-2xl max-h-[90vh] bg-transparent flex flex-col items-center">
+      <img id="lightboxImg" src="" class="max-w-full max-h-[85vh] object-contain rounded-xl shadow-2xl border-2 border-white/20" />
+      <p class="text-white text-xs mt-3 bg-black/60 px-3 py-1 rounded-full">Tap anywhere to close</p>
+    </div>
+  </div>
+
+  <!-- Auth Modal -->
+  <div id="authModal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl w-full max-w-sm p-5 shadow-2xl relative">
+      <button onclick="closeAuthModal()" class="absolute right-4 top-4 text-gray-400 hover:text-gray-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+      <div class="flex justify-center border-b mb-3">
+        <button id="authTabLogin" onclick="switchAuthTab('login')" class="pb-2 px-4 font-bold text-xs border-b-2 border-brand-orange text-brand-orange">Login</button>
+        <button id="authTabRegister" onclick="switchAuthTab('register')" class="pb-2 px-4 font-bold text-xs text-gray-400 border-b-2 border-transparent">Register</button>
+      </div>
+
+      <!-- Login -->
+      <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-3">
+        <div>
+          <label class="block text-xs font-bold text-gray-700 mb-1">Phone Number</label>
+          <input type="tel" id="loginPhone" placeholder="10-digit number" class="w-full p-2 border rounded-lg text-xs" required />
+        </div>
+        <button type="submit" class="w-full bg-brand-orange text-white py-2 rounded-xl font-bold text-xs shadow hover:bg-orange-600 transition">Login</button>
+      </form>
+
+      <!-- Register -->
+      <form id="registerForm" onsubmit="handleRegister(event)" class="hidden space-y-2.5">
+        <div>
+          <label class="block text-[11px] font-bold text-gray-700 mb-0.5">Profile Photo (Mandatory)</label>
+          <input type="file" id="regProfilePic" accept="image/*" class="w-full text-xs" required />
+        </div>
+        <div>
+          <label class="block text-[11px] font-bold text-gray-700 mb-0.5">Account Type</label>
+          <select id="regRole" onchange="toggleShopRegisterField()" class="w-full p-1.5 border rounded-lg text-xs font-medium">
+            <option value="customer">Customer (Khariddar)</option>
+            <option value="shopkeeper">Shopkeeper (Dukaandaar)</option>
+          </select>
+        </div>
+        <div id="regShopNameField" class="hidden">
+          <label class="block text-[11px] font-bold text-gray-700 mb-0.5">Dukaan Ka Naam</label>
+          <input type="text" id="regShopName" placeholder="e.g. Ramesh Kirana Store" class="w-full p-1.5 border rounded-lg text-xs" />
+        </div>
+        <div>
+          <label class="block text-[11px] font-bold text-gray-700 mb-0.5">Poora Naam</label>
+          <input type="text" id="regName" class="w-full p-1.5 border rounded-lg text-xs" required />
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-[11px] font-bold text-gray-700 mb-0.5">Phone</label>
+            <input type="tel" id="regPhone" class="w-full p-1.5 border rounded-lg text-xs" required />
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-gray-700 mb-0.5">Email</label>
+            <input type="email" id="regEmail" class="w-full p-1.5 border rounded-lg text-xs" />
+          </div>
+        </div>
+        <div>
+          <label class="block text-[11px] font-bold text-gray-700 mb-0.5">Address</label>
+          <textarea id="regAddress" rows="2" class="w-full p-1.5 border rounded-lg text-xs" required></textarea>
+        </div>
+        <button type="submit" class="w-full bg-brand-green text-white py-2 rounded-xl font-bold text-xs shadow hover:bg-green-700 transition">Register</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Add Product Modal -->
+  <div id="addProductModal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl w-full max-w-sm p-5 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+      <button onclick="closeAddProductModal()" class="absolute right-4 top-4 text-gray-400 hover:text-gray-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+      <h3 class="text-sm font-black text-gray-900 mb-3">Item Dukaan Me Jodein</h3>
+      <form onsubmit="handleProductSubmit(event)" class="space-y-2.5">
+        <div>
+          <label class="block text-[11px] font-bold text-gray-700 mb-0.5">Item Ka Naam</label>
+          <input type="text" id="pTitle" placeholder="e.g. Arhar Daal ya Mustard Oil" class="w-full p-1.5 border rounded-lg text-xs" required />
+        </div>
+        <div>
+          <label class="block text-[11px] font-bold text-gray-700 mb-0.5">Packaging Type</label>
+          <select id="pUnitType" class="w-full p-1.5 border rounded-lg text-xs font-medium" onchange="adjustPriceLabel()">
+            <option value="packet">Packed Item (Pouch / Packet / Bottle)</option>
+            <option value="weight">Loose / Khula Item (Sold by kg)</option>
+          </select>
+        </div>
+        <div>
+          <label id="pPriceLabel" class="block text-[11px] font-bold text-gray-700 mb-0.5">Price per Packet (₹)</label>
+          <input type="number" step="0.5" id="pPrice" placeholder="Enter ₹" class="w-full p-1.5 border rounded-lg text-xs" required />
+        </div>
+        <div>
+          <label class="block text-[11px] font-bold text-gray-700 mb-0.5">Photos (Max 4 Photos)</label>
+          <input type="file" id="pImages" accept="image/*" multiple class="w-full text-xs" />
+          <p class="text-[9px] text-gray-400">1 se 4 photo select kar sakte hain.</p>
+        </div>
+        <div>
+          <label class="block text-[11px] font-bold text-gray-700 mb-0.5">Description</label>
+          <textarea id="pDesc" rows="2" class="w-full p-1.5 border rounded-lg text-xs"></textarea>
+        </div>
+        <button type="submit" class="w-full bg-brand-orange text-white py-2 rounded-xl font-bold text-xs shadow hover:bg-orange-600 transition">Publish Item</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Professional Admin Modal (Cockpit) -->
+  <div id="adminModal" class="hidden fixed inset-0 bg-black/75 z-50 flex items-center justify-center p-3 md:p-6 overflow-y-auto">
+    <div class="bg-white rounded-3xl w-full max-w-5xl shadow-2xl relative overflow-hidden flex flex-col max-h-[92vh]">
+      <button onclick="closeAdminModal()" class="absolute right-4 top-4 text-gray-400 hover:text-gray-700 z-10 p-1">
+        <i data-lucide="x" class="w-6 h-6"></i>
+      </button>
+
+      <!-- Pin Entry Section -->
+      <div id="adminPinSection" class="p-8 my-auto max-w-sm mx-auto text-center">
+        <div class="w-14 h-14 bg-gray-900 text-yellow-400 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow">
+          <i data-lucide="shield-check" class="w-8 h-8"></i>
+        </div>
+        <h3 class="font-black text-lg text-gray-900">Admin Control Center</h3>
+        <p class="text-xs text-gray-500 mb-5">Security PIN darj karke access karein</p>
+        <form onsubmit="verifyAdmin(event)" class="space-y-3">
+          <input type="password" id="adminPasswordInput" placeholder="PIN Daalein" class="w-full p-3 border rounded-xl text-center tracking-widest text-sm font-black focus:ring-2 focus:ring-brand-orange" required />
+          <button type="submit" class="w-full bg-gray-900 text-white py-2.5 rounded-xl font-bold text-xs shadow hover:bg-black transition">
+            Unlock Cockpit
+          </button>
+        </form>
+      </div>
+
+      <!-- Dashboard View -->
+      <div id="adminControlSection" class="hidden flex flex-col h-full overflow-hidden">
+        
+        <!-- Header & Metrics -->
+        <div class="bg-gray-900 text-white p-5 border-b border-gray-800">
+          <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+            <div>
+              <span class="text-[10px] uppercase tracking-wider bg-orange-500/20 text-orange-400 font-black px-2 py-0.5 rounded">Super Admin Session</span>
+              <h2 class="text-xl font-black text-white leading-tight">BHALLEGAON - Central Management Portal</h2>
+            </div>
+            
+            <div class="flex items-center gap-2">
+              <button onclick="exportAllCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1 shadow">
+                <i data-lucide="download" class="w-3.5 h-3.5"></i> Export All (CSV)
+              </button>
+              <button onclick="logoutAdmin()" class="bg-red-500/20 hover:bg-red-500 text-red-300 hover:text-white px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1">
+                <i data-lucide="lock" class="w-3.5 h-3.5"></i> Lock
+              </button>
+            </div>
+          </div>
+
+          <!-- KPI Cards -->
+          <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 text-gray-200">
+            <div class="bg-gray-800/80 p-2.5 rounded-xl border border-gray-700">
+              <span class="text-[10px] text-gray-400 block font-semibold">Total Platform Sales</span>
+              <p id="kpiTotalRevenue" class="text-base font-black text-green-400">₹0</p>
+            </div>
+            <div class="bg-gray-800/80 p-2.5 rounded-xl border border-gray-700">
+              <span class="text-[10px] text-yellow-300 block font-semibold">Admin 2% Earned</span>
+              <p id="kpiAdminEarnings" class="text-base font-black text-yellow-400">₹0</p>
+            </div>
+            <div class="bg-gray-800/80 p-2.5 rounded-xl border border-gray-700">
+              <span class="text-[10px] text-emerald-400 block font-semibold">Ad Revenue (₹300/d)</span>
+              <p id="kpiAdEarnings" class="text-base font-black text-emerald-300">₹0</p>
+            </div>
+            <div class="bg-gray-800/80 p-2.5 rounded-xl border border-gray-700">
+              <span class="text-[10px] text-gray-400 block font-semibold">Total Orders</span>
+              <p id="kpiTotalOrders" class="text-base font-black text-blue-300">0</p>
+            </div>
+            <div class="bg-gray-800/80 p-2.5 rounded-xl border border-gray-700">
+              <span class="text-[10px] text-gray-400 block font-semibold">Active Shops</span>
+              <p id="kpiActiveShops" class="text-base font-black text-orange-400">0</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Navigation Sub-Tabs -->
+        <div class="bg-gray-100 border-b flex px-4 gap-2 text-xs font-bold text-gray-600 overflow-x-auto">
+          <button onclick="switchAdminTab('users')" id="admTabBtnUsers" class="py-2.5 px-3 border-b-2 border-brand-orange text-brand-orange">
+            Customers Directory
+          </button>
+          <button onclick="switchAdminTab('sellers')" id="admTabBtnSellers" class="py-2.5 px-3 border-b-2 border-transparent hover:text-brand-orange">
+            Sellers & Commission Due (2%)
+          </button>
+          <button onclick="switchAdminTab('orders')" id="admTabBtnOrders" class="py-2.5 px-3 border-b-2 border-transparent hover:text-brand-orange">
+            All Orders & Revenue Ledger
+          </button>
+          <button onclick="switchAdminTab('banners')" id="admTabBtnBanners" class="py-2.5 px-3 border-b-2 border-transparent hover:text-brand-orange flex items-center gap-1">
+            <i data-lucide="image" class="w-3.5 h-3.5 text-brand-orange"></i> Ad Banners & Commercials (₹300/Day)
+          </button>
+          <button onclick="switchAdminTab('settings')" id="admTabBtnSettings" class="py-2.5 px-3 border-b-2 border-transparent hover:text-brand-orange">
+            System & Toggles
+          </button>
+        </div>
+
+        <!-- Tab Content -->
+        <div class="p-4 md:p-6 overflow-y-auto flex-1 bg-white">
+          
+          <!-- Customers Directory -->
+          <div id="admSectionUsers" class="space-y-3">
+            <div class="flex justify-between items-center">
+              <h4 class="text-xs font-black text-gray-700 uppercase tracking-wide">Registered Customers Database</h4>
+              <button onclick="exportCustomersCSV()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-3 py-1 rounded-lg text-xs flex items-center gap-1 shadow transition">
+                <i data-lucide="download" class="w-3.5 h-3.5"></i> Customers CSV Download
+              </button>
+            </div>
+            <div class="border rounded-xl overflow-x-auto shadow-sm">
+              <table class="w-full text-left text-xs min-w-[650px]">
+                <thead class="bg-gray-50 border-b text-gray-500 font-bold uppercase">
+                  <tr>
+                    <th class="p-2.5 text-center">Photo</th>
+                    <th class="p-2.5">Customer Name</th>
+                    <th class="p-2.5">Phone</th>
+                    <th class="p-2.5">Email</th>
+                    <th class="p-2.5">Address</th>
+                    <th class="p-2.5 text-center">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="admCustomersTableBody" class="divide-y"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Sellers Directory & 2% Due Tracker -->
+          <div id="admSectionSellers" class="hidden space-y-3">
+            <div class="flex flex-wrap justify-between items-center gap-2">
+              <div class="flex items-center gap-2">
+                <h4 class="text-xs font-black text-gray-700 uppercase tracking-wide">Sellers Directory & Commission Ledger</h4>
+                <span class="text-[11px] bg-red-100 text-red-800 font-bold px-2 py-0.5 rounded">Fee: 2% (Orders ≥ ₹150)</span>
+              </div>
+              <button onclick="exportSellersCSV()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-3 py-1 rounded-lg text-xs flex items-center gap-1 shadow transition">
+                <i data-lucide="download" class="w-3.5 h-3.5"></i> Sellers CSV Download
+              </button>
+            </div>
+            <div class="border rounded-xl overflow-x-auto shadow-sm">
+              <table class="w-full text-left text-xs min-w-[850px]">
+                <thead class="bg-gray-50 border-b text-gray-500 font-bold uppercase">
+                  <tr>
+                    <th class="p-2.5 text-center">Owner Photo</th>
+                    <th class="p-2.5">Shop Name</th>
+                    <th class="p-2.5">Owner Name</th>
+                    <th class="p-2.5">Contact</th>
+                    <th class="p-2.5">Total Sales</th>
+                    <th class="p-2.5 text-red-600 font-black">Admin Fee Due (2%)</th>
+                    <th class="p-2.5">Status</th>
+                    <th class="p-2.5 text-center">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="admSellersTableBody" class="divide-y"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Master Orders Ledger -->
+          <div id="admSectionOrders" class="hidden space-y-3">
+            <div class="flex justify-between items-center">
+              <h4 class="text-xs font-black text-gray-700 uppercase tracking-wide">Master Order History & Commissions Breakdown</h4>
+              <button onclick="exportOrdersCSV()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-3 py-1 rounded-lg text-xs flex items-center gap-1 shadow transition">
+                <i data-lucide="download" class="w-3.5 h-3.5"></i> Orders CSV Download
+              </button>
+            </div>
+            <div class="border rounded-xl overflow-x-auto shadow-sm">
+              <table class="w-full text-left text-xs min-w-[850px]">
+                <thead class="bg-gray-50 border-b text-gray-500 font-bold uppercase">
+                  <tr>
+                    <th class="p-2.5">Code</th>
+                    <th class="p-2.5">Dukaan</th>
+                    <th class="p-2.5">Customer</th>
+                    <th class="p-2.5">Order Amount</th>
+                    <th class="p-2.5 text-yellow-700 font-bold">Admin Fee (2%)</th>
+                    <th class="p-2.5">Status</th>
+                    <th class="p-2.5">Date & Time</th>
+                  </tr>
+                </thead>
+                <tbody id="admOrdersTableBody" class="divide-y"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- UPGRADED: ADVERTISEMENT BANNERS MANAGEMENT TAB -->
+          <div id="admSectionBanners" class="hidden space-y-6">
+            <div class="bg-orange-50/70 border border-orange-200 p-4 rounded-2xl">
+              <div class="flex flex-wrap justify-between items-center gap-2 mb-2">
+                <h4 class="text-xs font-black text-brand-deepOrange uppercase tracking-wide flex items-center gap-1.5">
+                  <i data-lucide="calendar-plus" class="w-4 h-4"></i> Naya Commercial Ad Banner Jodein (Rate: ₹300/Day)
+                </h4>
+                <span class="text-[11px] bg-emerald-100 text-emerald-800 font-bold px-2.5 py-0.5 rounded-full">
+                  Automatic Midnight 12:00 AM Expiry
+                </span>
+              </div>
+              <p class="text-[11px] text-gray-600 mb-4">Ad jis din upload hoga, us din se gina jayega aur aakhiri din ki raat 12:00 baje system automatically users se hide kar dega.</p>
+              
+              <form id="adBannerForm" onsubmit="handleAdBannerSubmit(event)" class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <input type="hidden" id="editBannerId" value="" />
+                
+                <div>
+                  <label class="block text-[11px] font-bold text-gray-700 mb-0.5">Banner Image / Poster (Mandatory)</label>
+                  <input type="file" id="adBannerFile" accept="image/*" class="w-full text-xs" />
+                  <p class="text-[9px] text-gray-400 mt-0.5">Edit karte time naya select na karein toh purana rahega.</p>
+                </div>
+                <div>
+                  <label class="block text-[11px] font-bold text-gray-700 mb-0.5">Sponsor / Shop Name</label>
+                  <input type="text" id="adBannerSponsor" placeholder="e.g. Ramesh Kirana / Ravi Electronics" class="w-full p-2 border rounded-lg text-xs" required />
+                </div>
+                <div>
+                  <label class="block text-[11px] font-bold text-gray-700 mb-0.5">Sponsor Phone Number</label>
+                  <input type="tel" id="adBannerPhone" placeholder="10-digit number" class="w-full p-2 border rounded-lg text-xs" />
+                </div>
+
+                <div>
+                  <label class="block text-[11px] font-bold text-gray-700 mb-0.5">Ad Title / Offer Headline</label>
+                  <input type="text" id="adBannerTitle" placeholder="e.g. Diwali Dhamaka 20% Off" class="w-full p-2 border rounded-lg text-xs" required />
+                </div>
+                <div>
+                  <label class="block text-[11px] font-bold text-gray-700 mb-0.5">Short Tagline</label>
+                  <input type="text" id="adBannerSubtitle" placeholder="e.g. Sabhi masalon par 10% tak chhoot" class="w-full p-2 border rounded-lg text-xs" />
+                </div>
+                <div>
+                  <label class="block text-[11px] font-bold text-gray-700 mb-0.5">Linked Shop (Redirect on Click)</label>
+                  <select id="adBannerShopRedirect" class="w-full p-2 border rounded-lg text-xs"></select>
+                </div>
+
+                <!-- Commercial Billing Calculation -->
+                <div class="bg-white p-2.5 rounded-xl border col-span-full grid grid-cols-1 sm:grid-cols-3 gap-3 items-center">
+                  <div>
+                    <label class="block text-[11px] font-bold text-gray-700 mb-0.5">Duration (Days / 24 Hours Slab)</label>
+                    <input type="number" min="1" max="90" id="adBannerDays" value="1" oninput="updateBannerCalculatedCost()" class="w-full p-1.5 border rounded-lg text-xs font-bold" required />
+                  </div>
+                  <div>
+                    <span class="text-[10px] text-gray-500 font-semibold block">Total Ad Charge (Rate ₹300/Day)</span>
+                    <p id="adBannerCostDisplay" class="text-sm font-black text-brand-deepOrange">₹300 (1 Din)</p>
+                  </div>
+                  <div class="text-right">
+                    <button type="submit" id="bannerSubmitBtn" class="w-full bg-brand-orange hover:bg-orange-600 text-white font-bold py-2 rounded-xl text-xs shadow transition flex items-center justify-center gap-1.5">
+                      <i data-lucide="upload-cloud" class="w-4 h-4"></i> Publish Ad & Schedule Expiry
+                    </button>
+                    <button type="button" id="cancelBannerEditBtn" onclick="cancelBannerEdit()" class="hidden w-full mt-1.5 text-center text-xs text-gray-500 hover:text-red-600 font-bold">
+                      Cancel Edit
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </div>
+
+            <!-- Tabular View of Banners & Commercial Ledger -->
+            <div>
+              <div class="flex flex-wrap justify-between items-center gap-2 mb-2">
+                <h4 class="text-xs font-black text-gray-700 uppercase tracking-wide">Banners Directory & Commercial Ledger (Tabular View)</h4>
+                <button onclick="exportBannersCSV()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-3 py-1 rounded-lg text-xs flex items-center gap-1 shadow transition">
+                  <i data-lucide="download" class="w-3.5 h-3.5"></i> Banners CSV Download
+                </button>
+              </div>
+              
+              <div class="border rounded-xl overflow-x-auto shadow-sm">
+                <table class="w-full text-left text-xs min-w-[900px]">
+                  <thead class="bg-gray-50 border-b text-gray-500 font-bold uppercase">
+                    <tr>
+                      <th class="p-2.5 text-center">Poster</th>
+                      <th class="p-2.5">Sponsor / Shop</th>
+                      <th class="p-2.5">Title & Tagline</th>
+                      <th class="p-2.5">Days</th>
+                      <th class="p-2.5 text-brand-deepOrange">Charge (₹300/d)</th>
+                      <th class="p-2.5">Active Period (12 AM End)</th>
+                      <th class="p-2.5">Status</th>
+                      <th class="p-2.5 text-center">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="admBannersTableBody" class="divide-y"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- System Toggles -->
+          <div id="admSectionSettings" class="hidden space-y-4 max-w-lg">
+            <div class="flex items-center justify-between p-3.5 bg-gray-50 rounded-2xl border">
+              <div>
+                <p class="text-xs font-bold text-gray-900">Under Maintenance Mode</p>
+                <p class="text-[11px] text-gray-500">Website ko public se private lock karein.</p>
+              </div>
+              <button id="adminMaintToggleBtn" onclick="toggleMaintenanceSetting()" class="relative inline-flex h-6 w-11 items-center rounded-full bg-red-600 transition">
+                <span id="adminMaintCircle" class="inline-block h-4 w-4 transform rounded-full bg-white transition translate-x-6"></span>
+              </button>
+            </div>
+
+            <div class="flex items-center justify-between p-3.5 bg-gray-50 rounded-2xl border">
+              <div>
+                <p class="text-xs font-bold text-gray-900">Show Shop Phone Numbers</p>
+                <p class="text-[11px] text-gray-500">Customer ko dukaandaar ka phone show / hide karein.</p>
+              </div>
+              <button id="adminPhoneToggleBtn" onclick="togglePhoneVisibilitySetting()" class="relative inline-flex h-6 w-11 items-center rounded-full bg-green-500 transition">
+                <span id="adminPhoneCircle" class="inline-block h-4 w-4 transform rounded-full bg-white transition translate-x-6"></span>
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= JAVASCRIPT ENGINE ================= -->
+  <script>
+    // --- 1. FIREBASE INITIALIZATION ---
+    const firebaseConfig = {
+      apiKey: "AIzaSyDCw6vF1BwYp8K1K13TTmg8pT5W5G7NGjk",
+      authDomain: "bazaar-1402f.firebaseapp.com",
+      projectId: "bazaar-1402f",
+      storageBucket: "bazaar-1402f.appspot.com",
+      messagingSenderId: "389274934891",
+      appId: "1:389274934891:web:52627cb2a647038e079633"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // Helper: De-duplicate arrays by key (id)
+    function mergeUniqueById(existingArr, newArr) {
+      const map = new Map();
+      existingArr.forEach(item => { if (item && item.id) map.set(String(item.id), item); });
+      newArr.forEach(item => { if (item && item.id) map.set(String(item.id), item); });
+      return Array.from(map.values());
+    }
+
+    // State Management
+    let appSettings = JSON.parse(localStorage.getItem('bb_settings')) || { maintenanceMode: false, showSellerPhone: true };
+    let users = JSON.parse(localStorage.getItem('bb_users')) || [
+      {
+        id: 'usr-1',
+        name: 'Ramesh Bagwan',
+        phone: '9876543210',
+        email: 'ramesh@bhallegaon.in',
+        address: 'Main Market, Bhallegaon',
+        profilePic: 'https://images.unsplash.com/photo-1544717305-2782549b5136?w=200',
+        role: 'shopkeeper',
+        shopId: 'shop-1'
+      },
+      {
+        id: 'usr-demo-cust',
+        name: 'Suresh Negi',
+        phone: '9897123456',
+        email: 'suresh@gmail.com',
+        address: 'Ward No 2, Near Water Tank, Bhallegaon',
+        profilePic: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200',
+        role: 'customer',
+        shopId: null
+      }
+    ];
+    let shops = JSON.parse(localStorage.getItem('bb_shops')) || [
+      {
+        id: 'shop-1',
+        ownerId: 'usr-1',
+        shopName: 'Bagwan Kirana Store',
+        phone: '9876543210',
+        address: 'Shop No. 5, Main Market, Bhallegaon',
+        isOpen: true
+      }
+    ];
+    let products = JSON.parse(localStorage.getItem('bb_products')) || [
+      {
+        id: 'p-1',
+        shopId: 'shop-1',
+        title: 'Desi Shuddh Arhar Daal',
+        description: 'Ghar ki kheti ki unpolished fresh daal.',
+        unitType: 'weight',
+        pricePerKg: 140,
+        pricePerUnit: null,
+        images: ['https://images.unsplash.com/photo-1585994192701-f1a505c817ea?w=500']
+      },
+      {
+        id: 'p-2',
+        shopId: 'shop-1',
+        title: 'Fortune Mustard Oil Pouch (1L)',
+        description: 'Pure kacchi ghani mustard oil packet.',
+        unitType: 'packet',
+        pricePerUnit: 135,
+        pricePerKg: null,
+        images: ['https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=500']
+      }
+    ];
+    let orders = JSON.parse(localStorage.getItem('bb_orders')) || [];
+    let adBanners = JSON.parse(localStorage.getItem('bb_ad_banners')) || [
+      {
+        id: 'ban-1',
+        sponsor: 'Bagwan Kirana Store',
+        phone: '9876543210',
+        title: 'Bagwan Kirana - Shuddh Desi Daal Offer',
+        subtitle: '100% Taaza kheti ki daal par best rates!',
+        img: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=1200',
+        shopId: 'shop-1',
+        days: 3,
+        totalCharge: 900,
+        startDate: new Date().toISOString(),
+        endDate: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate() + 3, 23, 59, 59).toISOString(),
+        isManuallyHidden: false
+      }
+    ];
+
+    let currentUser = JSON.parse(localStorage.getItem('bb_current_user')) || null;
+    let cart = JSON.parse(localStorage.getItem('bb_cart')) || [];
+    let adminToken = false;
+    
+    // 8-second slider state & zoom state
+    let currentBannerIndex = 0;
+    let bannerSliderTimer = null;
+    let isBannerPaused = false;
+    let bannerZoomScale = 1;
+    let bannerPanX = 0;
+    let bannerPanY = 0;
+    let isDraggingBanner = false;
+    let dragStartX = 0;
+    let dragStartY = 0;
+    let initialPinchDistance = null;
+
+    const weightSelections = {};
+
+    function saveData() {
+      // De-duplicate state lists before writing
+      users = mergeUniqueById([], users);
+      shops = mergeUniqueById([], shops);
+      products = mergeUniqueById([], products);
+      orders = mergeUniqueById([], orders);
+      adBanners = mergeUniqueById([], adBanners);
+
+      localStorage.setItem('bb_settings', JSON.stringify(appSettings));
+      localStorage.setItem('bb_users', JSON.stringify(users));
+      localStorage.setItem('bb_shops', JSON.stringify(shops));
+      localStorage.setItem('bb_products', JSON.stringify(products));
+      localStorage.setItem('bb_orders', JSON.stringify(orders));
+      localStorage.setItem('bb_ad_banners', JSON.stringify(adBanners));
+      localStorage.setItem('bb_current_user', JSON.stringify(currentUser));
+      localStorage.setItem('bb_cart', JSON.stringify(cart));
+    }
+
+    // --- FIRESTORE REALTIME SYNC ENGINE ---
+    function initFirestoreLiveSync() {
+      // 1. Settings Sync
+      db.collection("settings").doc("appSettings").onSnapshot(doc => {
+        if (doc.exists) {
+          appSettings = doc.data();
+          localStorage.setItem('bb_settings', JSON.stringify(appSettings));
+          applyMaintenanceView();
+          updateAdminToggleUI();
+          renderShops(shops);
+        } else {
+          db.collection("settings").doc("appSettings").set(appSettings);
+        }
+      }, err => console.log("Settings sync:", err));
+
+      // 2. Users Sync (De-duplicate)
+      db.collection("users").onSnapshot(snap => {
+        if (!snap.empty) {
+          const list = [];
+          snap.forEach(d => list.push({ id: d.id, ...d.data() }));
+          users = mergeUniqueById([], list);
+          localStorage.setItem('bb_users', JSON.stringify(users));
+          if (adminToken) renderAdminDashboard();
+        } else if (users.length > 0) {
+          users.forEach(u => db.collection("users").doc(String(u.id)).set(u));
+        }
+      }, err => console.log("Users sync:", err));
+
+      // 3. Shops Sync (De-duplicate)
+      db.collection("shops").onSnapshot(snap => {
+        if (!snap.empty) {
+          const list = [];
+          snap.forEach(d => list.push({ id: d.id, ...d.data() }));
+          shops = mergeUniqueById([], list);
+          localStorage.setItem('bb_shops', JSON.stringify(shops));
+          renderShops(shops);
+          renderProducts(products);
+          if (currentUser && currentUser.role === 'shopkeeper') loadSellerDashboard();
+          if (adminToken) renderAdminDashboard();
+        } else if (shops.length > 0) {
+          shops.forEach(s => db.collection("shops").doc(String(s.id)).set(s));
+        }
+      }, err => console.log("Shops sync:", err));
+
+      // 4. Products Sync
+      db.collection("products").onSnapshot(snap => {
+        if (!snap.empty) {
+          const list = [];
+          snap.forEach(d => list.push({ id: d.id, ...d.data() }));
+          products = mergeUniqueById([], list);
+          localStorage.setItem('bb_products', JSON.stringify(products));
+          renderProducts(products);
+          if (currentUser && currentUser.role === 'shopkeeper') loadSellerDashboard();
+        } else if (products.length > 0) {
+          products.forEach(p => db.collection("products").doc(String(p.id)).set(p));
+        }
+      }, err => console.log("Products sync:", err));
+
+      // 5. Orders Sync (Instant Multi-Device Sync for Seller & Customer)
+      db.collection("orders").onSnapshot(snap => {
+        if (!snap.empty) {
+          const list = [];
+          snap.forEach(d => list.push({ id: d.id, ...d.data() }));
+          list.sort((a,b) => new Date(a.rawDate || 0) - new Date(b.rawDate || 0));
+          orders = mergeUniqueById([], list);
+          localStorage.setItem('bb_orders', JSON.stringify(orders));
+          if (currentUser && currentUser.role === 'customer') loadCustomerOrders();
+          if (currentUser && currentUser.role === 'shopkeeper') loadSellerDashboard();
+          if (adminToken) renderAdminDashboard();
+        }
+      }, err => console.log("Orders sync:", err));
+
+      // 6. Banners Sync
+      db.collection("adBanners").onSnapshot(snap => {
+        if (!snap.empty) {
+          const list = [];
+          snap.forEach(d => list.push({ id: d.id, ...d.data() }));
+          adBanners = mergeUniqueById([], list);
+          localStorage.setItem('bb_ad_banners', JSON.stringify(adBanners));
+          initHomeAdCarousel();
+          if (adminToken) renderAdminDashboard();
+        } else if (adBanners.length > 0) {
+          adBanners.forEach(b => db.collection("adBanners").doc(String(b.id)).set(b));
+        }
+      }, err => console.log("Banners sync:", err));
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+      applyMaintenanceView();
+      initHomeAdCarousel();
+      setupZoomPanEvents();
+      renderProducts(products);
+      renderShops(shops);
+      updateAuthUI();
+      renderCartBadge();
+      initFirestoreLiveSync();
+    });
+
+    function applyMaintenanceView() {
+      const el = document.getElementById('maintenanceScreen');
+      if (appSettings.maintenanceMode && !adminToken) el.classList.remove('hidden');
+      else el.classList.add('hidden');
+    }
+
+    function expandImage(src) {
+      if (!src) return;
+      document.getElementById('lightboxImg').src = src;
+      document.getElementById('imageLightboxModal').classList.remove('hidden');
+    }
+    function closeImageLightbox() {
+      document.getElementById('imageLightboxModal').classList.add('hidden');
+    }
+
+    function isBannerActive(b) {
+      if (b.isManuallyHidden) return false;
+      const now = new Date();
+      const end = new Date(b.endDate);
+      return now <= end;
+    }
+
+    function getActiveBannersList() {
+      return adBanners.filter(b => isBannerActive(b));
+    }
+
+    function initHomeAdCarousel() {
+      if (bannerSliderTimer) clearInterval(bannerSliderTimer);
+      renderCurrentAdSlide();
+
+      const activeList = getActiveBannersList();
+      if (activeList.length > 1) {
+        bannerSliderTimer = setInterval(() => {
+          if (!isBannerPaused) {
+            nextAdSlide();
+          }
+        }, 8000);
+      }
+    }
+
+    function pauseAdSlide() { isBannerPaused = true; }
+    function resumeAdSlide() { isBannerPaused = false; }
+    function resumeAdSlideDelayed() { setTimeout(() => { isBannerPaused = false; }, 1500); }
+
+    function renderCurrentAdSlide() {
+      const container = document.getElementById('homeAdBannerContainer');
+      const activeList = getActiveBannersList();
+
+      if (!activeList || activeList.length === 0) {
+        container.innerHTML = `
+          <div class="relative bg-gradient-to-r from-orange-500 to-amber-500 text-white p-6 sm:p-8 flex flex-col justify-center min-h-[160px] sm:min-h-[200px]">
+            <span class="text-xs uppercase font-black tracking-widest bg-black/25 px-2.5 py-1 rounded w-max mb-2">Local Market Pickup</span>
+            <h2 class="text-lg sm:text-2xl font-black leading-snug">Ghar baithe samaan chunein, dukan se bina line pack milega!</h2>
+            <p class="text-xs sm:text-sm text-yellow-100 mt-1">Shaam 6:00 PM se pehle order collect karein.</p>
+          </div>
+        `;
+        return;
+      }
+
+      if (currentBannerIndex >= activeList.length) currentBannerIndex = 0;
+      if (currentBannerIndex < 0) currentBannerIndex = activeList.length - 1;
+
+      const activeAd = activeList[currentBannerIndex];
+      const hasMultiple = activeList.length > 1;
+
+      container.innerHTML = `
+        <div class="relative w-full h-52 sm:h-72 bg-gray-950 overflow-hidden cursor-zoom-in" onclick="openBannerZoomModal('${activeAd.img}')">
+          <img src="${activeAd.img}" class="w-full h-full object-cover opacity-85 transition-opacity duration-500" />
+          <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent flex flex-col justify-end p-5 sm:p-7 text-white pointer-events-none">
+            <div class="flex items-center gap-2 mb-1.5">
+              <span class="bg-brand-orange text-white text-[10px] sm:text-xs font-black uppercase px-2.5 py-0.5 rounded-full tracking-wider shadow">Featured Store Ad</span>
+              <span class="bg-black/40 text-yellow-300 text-[10px] px-2 py-0.5 rounded-full flex items-center gap-1">
+                <i data-lucide="zoom-in" class="w-3 h-3"></i> Tap to Zoom / Hold to read
+              </span>
+            </div>
+            <h3 class="text-base sm:text-2xl font-black leading-tight drop-shadow">${activeAd.title}</h3>
+            ${activeAd.subtitle ? `<p class="text-xs sm:text-sm text-gray-200 mt-1 line-clamp-2 max-w-xl">${activeAd.subtitle}</p>` : ''}
+          </div>
+        </div>
+
+        ${hasMultiple ? `
+          <button onclick="event.stopPropagation(); prevAdSlide();" class="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/55 hover:bg-black/85 text-white flex items-center justify-center transition shadow-lg backdrop-blur-sm z-10">
+            <i data-lucide="chevron-left" class="w-5 h-5"></i>
+          </button>
+          
+          <button onclick="event.stopPropagation(); nextAdSlide();" class="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/55 hover:bg-black/85 text-white flex items-center justify-center transition shadow-lg backdrop-blur-sm z-10">
+            <i data-lucide="chevron-right" class="w-5 h-5"></i>
+          </button>
+
+          <div class="absolute bottom-3 right-5 flex items-center gap-2 z-10">
+            ${activeList.map((_, i) => `
+              <span onclick="event.stopPropagation(); goToAdSlide(${i});" class="h-2 rounded-full transition-all cursor-pointer ${i === currentBannerIndex ? 'w-6 bg-brand-orange' : 'w-2 bg-white/60'}"></span>
+            `).join('')}
+          </div>
+        ` : ''}
+      `;
+      lucide.createIcons();
+    }
+
+    function nextAdSlide() {
+      const activeList = getActiveBannersList();
+      if (!activeList.length) return;
+      currentBannerIndex = (currentBannerIndex + 1) % activeList.length;
+      renderCurrentAdSlide();
+    }
+
+    function prevAdSlide() {
+      const activeList = getActiveBannersList();
+      if (!activeList.length) return;
+      currentBannerIndex = (currentBannerIndex - 1 + activeList.length) % activeList.length;
+      renderCurrentAdSlide();
+    }
+
+    function goToAdSlide(index) {
+      currentBannerIndex = index;
+      renderCurrentAdSlide();
+      if (bannerSliderTimer) clearInterval(bannerSliderTimer);
+      const activeList = getActiveBannersList();
+      if (activeList.length > 1) {
+        bannerSliderTimer = setInterval(() => {
+          if (!isBannerPaused) nextAdSlide();
+        }, 8000);
+      }
+    }
+
+    function openBannerZoomModal(imgSrc) {
+      pauseAdSlide();
+      const modal = document.getElementById('bannerZoomModal');
+      const img = document.getElementById('bannerZoomImg');
+      img.src = imgSrc;
+      bannerZoomScale = 1;
+      bannerPanX = 0;
+      bannerPanY = 0;
+      updateBannerTransform();
+      modal.classList.remove('hidden');
+    }
+
+    function closeBannerZoomModal() {
+      document.getElementById('bannerZoomModal').classList.add('hidden');
+      resumeAdSlide();
+    }
+
+    function updateBannerTransform() {
+      const img = document.getElementById('bannerZoomImg');
+      if (img) {
+        img.style.transform = `translate(${bannerPanX}px, ${bannerPanY}px) scale(${bannerZoomScale})`;
+      }
+    }
+
+    function zoomBannerStep(delta) {
+      bannerZoomScale = Math.min(Math.max(0.75, bannerZoomScale + delta), 4.5);
+      updateBannerTransform();
+    }
+
+    function resetBannerZoom() {
+      bannerZoomScale = 1;
+      bannerPanX = 0;
+      bannerPanY = 0;
+      updateBannerTransform();
+    }
+
+    function setupZoomPanEvents() {
+      const viewport = document.getElementById('bannerZoomViewport');
+      viewport.addEventListener('mousedown', (e) => {
+        isDraggingBanner = true;
+        dragStartX = e.clientX - bannerPanX;
+        dragStartY = e.clientY - bannerPanY;
+      });
+
+      window.addEventListener('mousemove', (e) => {
+        if (!isDraggingBanner) return;
+        bannerPanX = e.clientX - dragStartX;
+        bannerPanY = e.clientY - dragStartY;
+        updateBannerTransform();
+      });
+
+      window.addEventListener('mouseup', () => { isDraggingBanner = false; });
+
+      viewport.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        zoomBannerStep(e.deltaY < 0 ? 0.2 : -0.2);
+      }, { passive: false });
+
+      viewport.addEventListener('touchstart', (e) => {
+        if (e.touches.length === 1) {
+          isDraggingBanner = true;
+          dragStartX = e.touches[0].clientX - bannerPanX;
+          dragStartY = e.touches[0].clientY - bannerPanY;
+        } else if (e.touches.length === 2) {
+          isDraggingBanner = false;
+          initialPinchDistance = Math.hypot(
+            e.touches[0].clientX - e.touches[1].clientX,
+            e.touches[0].clientY - e.touches[1].clientY
+          );
+        }
+      }, { passive: true });
+
+      viewport.addEventListener('touchmove', (e) => {
+        if (e.touches.length === 1 && isDraggingBanner) {
+          bannerPanX = e.touches[0].clientX - dragStartX;
+          bannerPanY = e.touches[0].clientY - dragStartY;
+          updateBannerTransform();
+        } else if (e.touches.length === 2 && initialPinchDistance) {
+          const currentDistance = Math.hypot(
+            e.touches[0].clientX - e.touches[1].clientX,
+            e.touches[0].clientY - e.touches[1].clientY
+          );
+          const ratio = currentDistance / initialPinchDistance;
+          bannerZoomScale = Math.min(Math.max(0.75, bannerZoomScale * (ratio > 1 ? 1.03 : 0.97)), 4.5);
+          initialPinchDistance = currentDistance;
+          updateBannerTransform();
+        }
+      }, { passive: true });
+
+      viewport.addEventListener('touchend', (e) => {
+        if (e.touches.length === 0) {
+          isDraggingBanner = false;
+          initialPinchDistance = null;
+        }
+      });
+    }
+
+    function navigateTab(tab) {
+      ['viewHome', 'viewShops', 'viewCart', 'viewOrders', 'viewAccount', 'viewSeller'].forEach(id => {
+        document.getElementById(id).classList.add('hidden');
+      });
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.classList.remove('border-brand-orange', 'text-brand-orange');
+        btn.classList.add('border-transparent', 'text-gray-500');
+      });
+
+      if (tab === 'home') {
+        document.getElementById('viewHome').classList.remove('hidden');
+        setActiveBtn('tabHome');
+        initHomeAdCarousel();
+        renderProducts(products);
+      } else if (tab === 'shops') {
+        document.getElementById('viewShops').classList.remove('hidden');
+        setActiveBtn('tabShops');
+        renderShops(shops);
+      } else if (tab === 'cart') {
+        document.getElementById('viewCart').classList.remove('hidden');
+        renderCart();
+      } else if (tab === 'orders') {
+        if (!currentUser) return openAuthModal();
+        document.getElementById('viewOrders').classList.remove('hidden');
+        setActiveBtn('tabOrders');
+        loadCustomerOrders();
+      } else if (tab === 'account') {
+        if (!currentUser) return openAuthModal();
+        document.getElementById('viewAccount').classList.remove('hidden');
+        setActiveBtn('tabAccount');
+        populateAccount();
+      } else if (tab === 'seller') {
+        if (!currentUser || currentUser.role !== 'shopkeeper') return;
+        document.getElementById('viewSeller').classList.remove('hidden');
+        setActiveBtn('sellerTabBtn');
+        loadSellerDashboard();
+      }
+      lucide.createIcons();
+    }
+
+    function setActiveBtn(id) {
+      const el = document.getElementById(id);
+      if (el) {
+        el.classList.remove('border-transparent', 'text-gray-500');
+        el.classList.add('border-brand-orange', 'text-brand-orange');
+      }
+    }
+
+    function renderProducts(items) {
+      const grid = document.getElementById('productsGrid');
+      grid.innerHTML = '';
+      if (!items || !items.length) {
+        grid.innerHTML = '<div class="col-span-full py-12 text-center text-gray-400 text-xs">Koi item nahi mila.</div>';
+        return;
+      }
+
+      items.forEach(prod => {
+        const title = prod.title || prod.name || 'Bazaar Item';
+        const price = prod.pricePerUnit || prod.pricePerKg || prod.price || 0;
+        const shop = shops.find(s => String(s.id) === String(prod.shopId)) || { shopName: (prod.seller || 'Bhallegaon Shop'), isOpen: true };
+        const isClosed = (shop.isOpen === false);
+
+        if (!weightSelections[prod.id]) {
+          weightSelections[prod.id] = { base: 0.5, multiplier: 1 };
+        }
+
+        const card = document.createElement('div');
+        card.className = "bg-white rounded-2xl border shadow-sm overflow-hidden flex flex-col justify-between transition hover:shadow-md " + (isClosed ? 'shop-closed-filter' : '');
+        const img = (prod.images && prod.images.length > 0) ? prod.images[0] : (prod.img || 'https://via.placeholder.com/300?text=Bagwan+Bazaar');
+
+        const baseKg = weightSelections[prod.id].base;
+        const mult = weightSelections[prod.id].multiplier;
+        const totalKg = baseKg * mult;
+        const unitType = prod.unitType || 'packet';
+        const calculatedPrice = (Number(prod.pricePerKg || price) * totalKg).toFixed(0);
+
+        card.innerHTML = `
+          <div>
+            <div class="relative w-full h-40 bg-gray-100 overflow-hidden cursor-pointer" onclick="expandImage('${img}')" title="Click to view large photo">
+              <img src="${img}" class="w-full h-full object-cover hover:scale-105 transition duration-300" />
+              ${isClosed ? '<span class="absolute top-2 left-2 bg-red-600 text-white font-bold text-[10px] px-2 py-0.5 rounded shadow">Dukan Band Hai</span>' : ''}
+            </div>
+            <div class="p-3">
+              <p class="text-[11px] font-bold text-brand-orange flex items-center gap-1">
+                <i data-lucide="store" class="w-3 h-3"></i> ${shop.shopName}
+              </p>
+              <h3 class="font-bold text-gray-900 text-xs mt-1 leading-snug">${title}</h3>
+              <p class="text-[10px] text-gray-500 mt-0.5 line-clamp-1">${prod.description || ''}</p>
+              
+              <div class="mt-2 pt-2 border-t">
+                ${unitType === 'packet' ? `
+                  <div class="flex items-center justify-between">
+                    <span class="text-base font-black text-gray-900">₹${price}</span>
+                    <div class="flex items-center gap-1 text-xs">
+                      <label class="text-gray-400 font-bold text-[10px]">Qty:</label>
+                      <input type="number" min="1" max="50" value="1" id="qty-${prod.id}" class="w-12 p-0.5 border rounded text-center font-bold" />
+                    </div>
+                  </div>
+                ` : `
+                  <div>
+                    <div class="flex justify-between items-baseline mb-1">
+                      <span class="text-[10px] text-gray-400 font-semibold">Loose Weight:</span>
+                      <span class="text-xs font-black text-brand-deepOrange">₹${price}/kg</span>
+                    </div>
+                    <div class="grid grid-cols-4 gap-1 text-[10px] text-center font-bold mb-1">
+                      <button type="button" onclick="setWeight('${prod.id}', 0.5, 1)" class="w-btn-${prod.id} border rounded py-0.5 ${baseKg === 0.5 ? 'bg-orange-100 border-brand-orange text-brand-orange' : 'bg-gray-50 text-gray-600'}" data-w="0.5">½ kg</button>
+                      <button type="button" onclick="setWeight('${prod.id}', 1, 1)" class="w-btn-${prod.id} border rounded py-0.5 ${baseKg === 1 ? 'bg-orange-100 border-brand-orange text-brand-orange' : 'bg-gray-50 text-gray-600'}" data-w="1">1 kg</button>
+                      <button type="button" onclick="setWeight('${prod.id}', 2, 1)" class="w-btn-${prod.id} border rounded py-0.5 ${baseKg === 2 ? 'bg-orange-100 border-brand-orange text-brand-orange' : 'bg-gray-50 text-gray-600'}" data-w="2">2 kg</button>
+                      <button type="button" onclick="setWeight('${prod.id}', 5, 1)" class="w-btn-${prod.id} border rounded py-0.5 ${baseKg === 5 ? 'bg-orange-100 border-brand-orange text-brand-orange' : 'bg-gray-50 text-gray-600'}" data-w="5">5 kg</button>
+                    </div>
+                    <div id="multiplierBox-${prod.id}" class="${baseKg === 5 ? '' : 'hidden'} flex items-center justify-between text-[10px] bg-orange-50 p-1 rounded mb-1 font-bold">
+                      <span class="text-gray-700">5kg Multiplier:</span>
+                      <div class="space-x-1">
+                        <button type="button" onclick="setWeight('${prod.id}', 5, 1)" class="px-1.5 py-0.5 rounded ${mult === 1 ? 'bg-brand-orange text-white' : 'bg-gray-200 text-gray-800'}">x1</button>
+                        <button type="button" onclick="setWeight('${prod.id}', 5, 2)" class="px-1.5 py-0.5 rounded ${mult === 2 ? 'bg-brand-orange text-white' : 'bg-gray-200 text-gray-800'}">x2 (10kg)</button>
+                        <button type="button" onclick="setWeight('${prod.id}', 5, 3)" class="px-1.5 py-0.5 rounded ${mult === 3 ? 'bg-brand-orange text-white' : 'bg-gray-200 text-gray-800'}">x3 (15kg)</button>
+                      </div>
+                    </div>
+                    <div class="text-right text-[10px] font-bold text-gray-600">
+                      Total: <span id="weightPriceDisplay-${prod.id}" class="text-green-700">₹${calculatedPrice} (${totalKg} kg)</span>
+                    </div>
+                  </div>
+                `}
+              </div>
+            </div>
+          </div>
+          <div class="p-3 pt-0">
+            <button type="button" onclick="addToCart('${prod.id}')" ${isClosed ? 'disabled' : ''} class="w-full bg-brand-orange text-white py-1.5 rounded-xl font-bold text-xs shadow hover:bg-orange-600 transition disabled:bg-gray-400">
+              ${isClosed ? 'Dukan Band Hai' : 'Add to Cart'}
+            </button>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+      lucide.createIcons();
+    }
+
+    function setWeight(prodId, base, multiplier = 1) {
+      weightSelections[prodId] = { base: Number(base), multiplier: Number(multiplier) };
+      const prod = products.find(p => String(p.id) === String(prodId));
+      if (!prod) return;
+
+      document.querySelectorAll(`.w-btn-${prodId}`).forEach(b => {
+        if (parseFloat(b.getAttribute('data-w')) === Number(base)) {
+          b.className = `w-btn-${prodId} border rounded py-0.5 bg-orange-100 border-brand-orange text-brand-orange font-bold`;
+        } else {
+          b.className = `w-btn-${prodId} border rounded py-0.5 bg-gray-50 text-gray-600 font-bold`;
+        }
+      });
+
+      const multBox = document.getElementById(`multiplierBox-${prodId}`);
+      if (multBox) {
+        if (Number(base) === 5) multBox.classList.remove('hidden');
+        else multBox.classList.add('hidden');
+      }
+
+      const totalKg = Number(base) * Number(multiplier);
+      const price = prod.pricePerKg || prod.price || 0;
+      const finalPrice = Math.round(totalKg * Number(price));
+      const disp = document.getElementById(`weightPriceDisplay-${prodId}`);
+      if (disp) disp.innerText = `₹${finalPrice} (${totalKg} kg)`;
+    }
+
+    function adjustPriceLabel() {
+      const type = document.getElementById('pUnitType').value;
+      document.getElementById('pPriceLabel').innerText = (type === 'packet') ? 'Price per Packet (₹)' : 'Price per Kilogram (₹/kg)';
+    }
+
+    function addToCart(prodId) {
+      const prod = products.find(p => String(p.id) === String(prodId));
+      if (!prod) return alert("Item nahi mila!");
+
+      const shop = shops.find(s => String(s.id) === String(prod.shopId));
+      if (shop && shop.isOpen === false) return alert("Yeh dukaan filhal band hai. Aap add nahi kar sakte.");
+
+      const resolvedShopId = shop ? String(shop.id) : String(prod.shopId || 'shop-1');
+      const shopName = shop ? shop.shopName : (prod.seller || "Bhallegaon Store");
+      const title = prod.title || prod.name || "Bazaar Item";
+      const unitType = prod.unitType || 'packet';
+
+      let itemToAdd = {
+        productId: String(prod.id),
+        shopId: resolvedShopId,
+        shopName: shopName,
+        title: title,
+        unitType: unitType
+      };
+
+      if (unitType === 'packet') {
+        const qtyEl = document.getElementById(`qty-${prod.id}`);
+        const qty = qtyEl ? (parseInt(qtyEl.value, 10) || 1) : 1;
+        const unitPrice = Number(prod.pricePerUnit || prod.price || 0);
+
+        itemToAdd.quantity = qty;
+        itemToAdd.weightDesc = `${qty} Packet`;
+        itemToAdd.totalPrice = qty * unitPrice;
+      } else {
+        const sel = weightSelections[prod.id] || { base: 0.5, multiplier: 1 };
+        const totalKg = Number(sel.base) * Number(sel.multiplier);
+        const kgPrice = Number(prod.pricePerKg || prod.price || 0);
+
+        itemToAdd.quantity = 1;
+        itemToAdd.weightDesc = `${totalKg} kg`;
+        itemToAdd.totalPrice = Math.round(totalKg * kgPrice);
+      }
+
+      cart.push(itemToAdd);
+      saveData();
+      renderCartBadge();
+      alert(`"${title}" (${itemToAdd.weightDesc}) aapke bag mein add ho gaya!`);
+    }
+
+    function renderCartBadge() {
+      const b = document.getElementById('cartCountBadge');
+      if (cart && cart.length > 0) {
+        b.innerText = cart.length;
+        b.classList.remove('hidden');
+      } else {
+        b.classList.add('hidden');
+      }
+    }
+
+    function renderCart() {
+      const container = document.getElementById('cartContentWrapper');
+      container.innerHTML = '';
+      if (!cart || !cart.length) {
+        container.innerHTML = '<div class="p-8 text-center text-gray-400 bg-white rounded-2xl border text-xs">Aapka bag khali hai. Home page se item add karein.</div>';
+        return;
+      }
+
+      const grouped = {};
+      cart.forEach((it, idx) => {
+        if (!grouped[it.shopId]) grouped[it.shopId] = { shopName: it.shopName, items: [] };
+        grouped[it.shopId].items.push({ ...it, idx });
+      });
+
+      let grandTotal = 0;
+      Object.keys(grouped).forEach(sId => {
+        const g = grouped[sId];
+        const sTotal = g.items.reduce((s, i) => s + Number(i.totalPrice || 0), 0);
+        grandTotal += sTotal;
+
+        const isMinMet = (sTotal >= 100);
+
+        const box = document.createElement('div');
+        box.className = 'bg-white p-4 rounded-2xl shadow-sm border space-y-2';
+        box.innerHTML = `
+          <div class="border-b pb-2 flex justify-between items-center">
+            <h3 class="font-bold text-gray-900 text-xs flex items-center gap-1">
+              <i data-lucide="store" class="w-3.5 h-3.5 text-brand-orange"></i> ${g.shopName}
+            </h3>
+            <span class="text-[10px] ${isMinMet ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'} font-bold px-2 py-0.5 rounded">
+              ${isMinMet ? 'Min ₹100 Met' : 'Min ₹100 Required'}
+            </span>
+          </div>
+          <div class="divide-y divide-gray-50 text-xs">
+            ${g.items.map(it => `
+              <div class="py-1.5 flex justify-between items-center">
+                <div>
+                  <p class="font-bold">${it.title}</p>
+                  <p class="text-[10px] text-gray-500">${it.weightDesc}</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <span class="font-black">₹${it.totalPrice}</span>
+                  <button type="button" onclick="removeCartItem(${it.idx})" class="text-red-500 hover:text-red-700 transition"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+          <div class="pt-2 border-t flex justify-between font-bold text-xs items-center">
+            <span class="${isMinMet ? 'text-gray-700' : 'text-red-500'}">
+              Dukan Total: ${!isMinMet ? '(Order karne ke liye ₹' + (100 - sTotal) + ' ka aur samaan jodein)' : ''}
+            </span>
+            <span class="text-brand-deepOrange text-sm">₹${sTotal}</span>
+          </div>
+        `;
+        container.appendChild(box);
+      });
+
+      const summary = document.createElement('div');
+      summary.className = 'bg-gray-100 p-4 rounded-2xl border flex flex-col md:flex-row justify-between items-center gap-3';
+      summary.innerHTML = `
+        <div>
+          <span class="text-[9px] text-gray-500 font-bold uppercase">Total Bill Across Shops</span>
+          <p class="text-xl font-black text-gray-900">₹${grandTotal}</p>
+          <p class="text-[10px] text-gray-500">Pick up time shaam 6:00 PM tak hai.</p>
+        </div>
+        <button type="button" onclick="handleCheckout()" class="w-full md:w-auto bg-brand-green text-white px-6 py-2 rounded-xl font-black text-xs shadow hover:bg-green-700 transition">
+          Order Confirm Karein
+        </button>
+      `;
+      container.appendChild(summary);
+      lucide.createIcons();
+    }
+
+    function removeCartItem(idx) {
+      cart.splice(idx, 1);
+      saveData();
+      renderCartBadge();
+      renderCart();
+    }
+
+    async function handleCheckout() {
+      if (!currentUser) return openAuthModal();
+
+      const shopGroupMap = {};
+      cart.forEach((item) => {
+        if (!shopGroupMap[item.shopId]) shopGroupMap[item.shopId] = [];
+        shopGroupMap[item.shopId].push(item);
+      });
+
+      for (const sId of Object.keys(shopGroupMap)) {
+        const shopTotal = shopGroupMap[sId].reduce((acc, curr) => acc + Number(curr.totalPrice || 0), 0);
+        if (shopTotal < 100) {
+          alert(`Dukaan "${shopGroupMap[sId][0].shopName}" se minimum order ₹100 ka hona zaroori hai. Abhi sirf ₹${shopTotal} ka samaan hai. Kripya ₹${100 - shopTotal} ka samaan aur add karein.`);
+          return;
+        }
+      }
+
+      const syncPromises = [];
+      const now = new Date();
+
+      Object.keys(shopGroupMap).forEach((sId) => {
+        const shopItems = shopGroupMap[sId];
+        const totalAmount = shopItems.reduce((acc, curr) => acc + Number(curr.totalPrice || 0), 0);
+        const pickupCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+        const adminFee = (totalAmount >= 150) ? Number((totalAmount * 0.02).toFixed(2)) : 0;
+        const newOrderId = 'ord-' + Math.floor(Math.random() * 1e8);
+
+        const newOrderObj = {
+          id: newOrderId,
+          pickupCode,
+          shopId: String(sId),
+          customerId: String(currentUser.id),
+          customerName: currentUser.name,
+          customerPhone: currentUser.phone,
+          customerAddress: currentUser.address,
+          items: shopItems,
+          totalAmount: totalAmount,
+          adminFee: adminFee,
+          status: 'pending',
+          createdAt: now.toLocaleString(),
+          rawDate: now.toISOString()
+        };
+
+        orders.push(newOrderObj);
+        syncPromises.push(db.collection("orders").doc(newOrderId).set(newOrderObj));
+      });
+
+      cart = [];
+      saveData();
+      renderCartBadge();
+      alert('Order confirm ho gaya! Shaam 6:00 PM se pehle dukan se samaan collect karein.');
+      navigateTab('orders');
+
+      Promise.all(syncPromises).catch(e => console.error("Cloud push failed:", e));
+    }
+
+    function sendOrderToWhatsApp(orderId) {
+      const ord = orders.find(o => String(o.id) === String(orderId));
+      if (!ord) return;
+
+      const shop = shops.find(s => String(s.id) === String(ord.shopId));
+      const shopPhone = shop ? shop.phone : '';
+
+      let text = `*BHALLEGAON - BAGWAN BAZAAR ORDER*\n`;
+      text += `📦 *Pickup Security Code:* #${ord.pickupCode}\n`;
+      text += `👤 *Customer:* ${ord.customerName} (${ord.customerPhone})\n`;
+      text += `📍 *Address:* ${ord.customerAddress}\n\n`;
+      text += `*ITEMS TO PACK:*\n`;
+      ord.items.forEach((it, idx) => {
+        text += `${idx + 1}. ${it.title} - ${it.weightDesc} (₹${it.totalPrice})\n`;
+      });
+      text += `\n💰 *Total Amount:* ₹${ord.totalAmount}\n`;
+      text += `⏰ *Pickup Deadline:* 6:00 PM tak\n`;
+      text += `_Kripya samaan pack karke thele par Customer Name aur Code #${ord.pickupCode} likh dein._`;
+
+      const targetPhone = shopPhone ? (shopPhone.startsWith('91') ? shopPhone : '91' + shopPhone) : '';
+      const url = `https://api.whatsapp.com/send?phone=${targetPhone}&text=${encodeURIComponent(text)}`;
+      window.open(url, '_blank');
+    }
+
+    function chatWithCustomerWhatsApp(customerPhone, pickupCode, customerName) {
+      if (!customerPhone) return alert('Phone number uplabdh nahi hai.');
+      const phone = customerPhone.startsWith('91') ? customerPhone : '91' + customerPhone;
+      const text = `Namaste ${customerName} ji! Aapka Bhallegaon Bagwan Bazaar order #${pickupCode} pack ho chuka hai. Kripya shaam 6:00 PM se pehle dukaan se collect kar lein.`;
+      window.open(`https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(text)}`, '_blank');
+    }
+
+    function loadCustomerOrders() {
+      const container = document.getElementById('customerOrdersContainer');
+      const myOrders = orders.filter(o => String(o.customerId) === String(currentUser.id));
+
+      if (!myOrders.length) {
+        container.innerHTML = '<div class="p-6 bg-white rounded-xl text-center text-gray-400 text-xs border">Aapka koi order nahi hai.</div>';
+        return;
+      }
+
+      container.innerHTML = myOrders.slice().reverse().map(ord => {
+        const shop = shops.find(s => String(s.id) === String(ord.shopId)) || { shopName: 'Shop', phone: '' };
+        let badge = '';
+        if (ord.status === 'pending') {
+          badge = '<span class="bg-yellow-100 text-yellow-800 font-bold px-2.5 py-0.5 rounded text-[10px] inline-flex items-center gap-1"><i data-lucide="clock" class="w-3 h-3"></i> Packing Pending</span>';
+        } else if (ord.status === 'packed') {
+          badge = '<span class="bg-blue-100 text-blue-800 font-bold px-2.5 py-0.5 rounded text-[10px] inline-flex items-center gap-1"><i data-lucide="package-check" class="w-3 h-3"></i> Packed & Ready for Pickup</span>';
+        } else if (ord.status === 'delivered') {
+          badge = '<span class="bg-green-100 text-green-800 font-bold px-2.5 py-0.5 rounded text-[10px] inline-flex items-center gap-1"><i data-lucide="check-circle-2" class="w-3 h-3"></i> Delivered / Received</span>';
+        }
+
+        return `
+          <div class="bg-white p-4 rounded-2xl shadow-sm border space-y-2">
+            <div class="flex justify-between items-center border-b pb-2">
+              <div>
+                <h4 class="font-extrabold text-xs text-gray-900">${shop.shopName}</h4>
+                ${appSettings.showSellerPhone ? '<p class="text-[10px] text-brand-orange font-bold">📞 ' + shop.phone + '</p>' : ''}
+              </div>
+              <div class="text-right">
+                <span class="text-[9px] text-gray-400 block uppercase font-bold">Pickup Security Code</span>
+                <span class="text-base font-black text-brand-deepOrange bg-orange-50 px-2.5 py-0.5 rounded border border-orange-200">#${ord.pickupCode}</span>
+              </div>
+            </div>
+            <div class="text-xs divide-y divide-gray-50">
+              ${ord.items.map(i => `
+                <div class="py-1 flex justify-between">
+                  <span>${i.title} (${i.weightDesc})</span>
+                  <span class="font-bold">₹${i.totalPrice}</span>
+                </div>
+              `).join('')}
+            </div>
+            <div class="pt-2 border-t flex flex-wrap justify-between items-center gap-2 text-xs">
+              <div>
+                ${badge} 
+                <span class="text-[9px] text-gray-400 ml-1">Deadline: <b>6:00 PM</b></span>
+              </div>
+              <div class="flex items-center gap-2">
+                <button type="button" onclick="sendOrderToWhatsApp('${ord.id}')" class="bg-brand-whatsapp hover:bg-green-600 text-white font-bold px-2.5 py-1 rounded-lg text-[10px] flex items-center gap-1 shadow transition">
+                  <i data-lucide="message-circle" class="w-3 h-3"></i> Send on WhatsApp
+                </button>
+                <span class="font-black text-sm">₹${ord.totalAmount}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+      lucide.createIcons();
+    }
+
+    function renderShops(list) {
+      const container = document.getElementById('shopsListContainer');
+      container.innerHTML = list.map(s => `
+        <div class="bg-white p-4 rounded-2xl border shadow-sm flex flex-col justify-between ${!s.isOpen ? 'shop-closed-filter' : ''}">
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <h3 class="font-bold text-xs text-gray-900">${s.shopName}</h3>
+              <span class="text-[9px] font-bold px-2 py-0.5 rounded ${s.isOpen ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                ${s.isOpen ? 'Open (Till 6 PM)' : 'Closed'}
+              </span>
+            </div>
+            <p class="text-[11px] text-gray-500 mb-1">${s.address}</p>
+            ${appSettings.showSellerPhone ? '<p class="text-[11px] font-bold text-brand-orange">📞 ' + s.phone + '</p>' : ''}
+          </div>
+          <button type="button" onclick="filterByShop('${s.id}')" class="mt-3 w-full bg-orange-50 text-brand-orange font-bold text-xs py-1.5 rounded-xl hover:bg-orange-100 transition">
+            Dukan Ke Items Dekhein
+          </button>
+        </div>
+      `).join('');
+      lucide.createIcons();
+    }
+
+    function filterByShop(sId) {
+      navigateTab('home');
+      renderProducts(products.filter(p => String(p.shopId) === String(sId)));
+    }
+
+    function handleSearch() {
+      const q = (document.getElementById('searchInput').value || '').toLowerCase();
+      renderProducts(products.filter(p => {
+        const s = shops.find(x => String(x.id) === String(p.shopId));
+        const itemTitle = (p.title || p.name || '').toLowerCase();
+        const shopName = ((s && s.shopName) || p.seller || '').toLowerCase();
+        return itemTitle.includes(q) || shopName.includes(q);
+      }));
+    }
+
+    function loadSellerDashboard() {
+      if (!currentUser || currentUser.role !== 'shopkeeper') return;
+
+      // Find shop by shopId OR ownerId
+      let shop = shops.find(s => String(s.id) === String(currentUser.shopId) || String(s.ownerId) === String(currentUser.id));
+      if (!shop && currentUser.shopId) {
+        shop = { id: String(currentUser.shopId), shopName: 'Dukan Dashboard', address: currentUser.address, isOpen: true };
+      }
+
+      if (shop) {
+        document.getElementById('sellerShopTitle').innerText = shop.shopName;
+        document.getElementById('sellerShopAddress').innerText = shop.address;
+        updateShopToggleUI(shop.isOpen);
+      }
+
+      const activeShopId = shop ? String(shop.id) : String(currentUser.shopId);
+
+      // Match orders accurately
+      const shopOrders = orders.filter(o => String(o.shopId) === activeShopId);
+      const now = new Date();
+      const todayStr = now.toDateString();
+      const currentMonth = now.getMonth();
+      const currentYear = now.getFullYear();
+
+      let todaySales = 0;
+      let monthSales = 0;
+      let totalAdminDue = 0;
+
+      shopOrders.forEach(ord => {
+        if (ord.status === 'delivered') {
+          const ordDate = ord.rawDate ? new Date(ord.rawDate) : new Date();
+          if (ordDate.toDateString() === todayStr) {
+            todaySales += Number(ord.totalAmount || 0);
+          }
+          if (ordDate.getMonth() === currentMonth && ordDate.getFullYear() === currentYear) {
+            monthSales += Number(ord.totalAmount || 0);
+          }
+          
+          const fee = (ord.adminFee !== undefined) 
+            ? Number(ord.adminFee) 
+            : (ord.totalAmount >= 150 ? Number((ord.totalAmount * 0.02).toFixed(2)) : 0);
+          totalAdminDue += fee;
+        }
+      });
+
+      document.getElementById('sellerTodaySale').innerText = '₹' + todaySales;
+      document.getElementById('sellerMonthSale').innerText = '₹' + monthSales;
+      document.getElementById('sellerAdminDue').innerText = '₹' + totalAdminDue.toFixed(2);
+
+      const tbody = document.getElementById('sellerOrdersTableBody');
+      if (!shopOrders.length) {
+        tbody.innerHTML = '<tr><td colspan="9" class="p-4 text-center text-gray-400">Abhi koi order nahi aaya hai.</td></tr>';
+      } else {
+        tbody.innerHTML = shopOrders.slice().reverse().map(ord => {
+          const items = ord.items.map(i => `${i.title} (${i.weightDesc})`).join(', ');
+          const commissionCut = (ord.adminFee !== undefined) 
+            ? Number(ord.adminFee).toFixed(2)
+            : (ord.totalAmount >= 150 ? (ord.totalAmount * 0.02).toFixed(2) : "0.00");
+          
+          let btn = '';
+          if (ord.status === 'pending') {
+            btn = `<button type="button" onclick="updateOrderStatus('${ord.id}', 'packed')" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-2.5 py-1 rounded text-[10px] shadow transition">Mark Packed</button>`;
+          } else if (ord.status === 'packed') {
+            btn = `<button type="button" onclick="updateOrderStatus('${ord.id}', 'delivered')" class="bg-green-600 hover:bg-green-700 text-white font-bold px-2.5 py-1 rounded text-[10px] shadow transition">Delivered / Picked</button>`;
+          } else {
+            btn = '<span class="text-green-600 font-bold text-[10px] inline-flex items-center gap-1"><i data-lucide="check" class="w-3 h-3"></i> Completed</span>';
+          }
+
+          return `
+            <tr class="hover:bg-gray-50 border-b">
+              <td class="p-2.5 font-black text-brand-orange text-xs">#${ord.pickupCode}</td>
+              <td class="p-2.5 font-bold">${ord.customerName}</td>
+              <td class="p-2.5 text-gray-600">
+                <div class="flex items-center gap-1">
+                  <span>${ord.customerPhone}</span>
+                  <button type="button" onclick="chatWithCustomerWhatsApp('${ord.customerPhone}', '${ord.pickupCode}', '${ord.customerName}')" class="text-brand-whatsapp hover:opacity-80 p-0.5" title="WhatsApp Customer">
+                    <i data-lucide="message-circle" class="w-3.5 h-3.5"></i>
+                  </button>
+                </div>
+              </td>
+              <td class="p-2.5 text-gray-500 max-w-xs truncate">${ord.customerAddress}</td>
+              <td class="p-2.5 max-w-xs">${items}</td>
+              <td class="p-2.5 font-black">₹${ord.totalAmount}</td>
+              <td class="p-2.5 font-bold ${Number(commissionCut) > 0 ? 'text-red-600' : 'text-green-600'}">
+                ${Number(commissionCut) > 0 ? '₹' + commissionCut : '₹0 (Free)'}
+              </td>
+              <td class="p-2.5">
+                <span class="px-2 py-0.5 rounded text-[9px] font-bold uppercase ${ord.status === 'packed' ? 'bg-blue-100 text-blue-800' : ord.status === 'delivered' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">
+                  ${ord.status}
+                </span>
+              </td>
+              <td class="p-2.5 text-center">${btn}</td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      const myProds = products.filter(p => String(p.shopId) === activeShopId);
+      document.getElementById('sellerProductsGrid').innerHTML = myProds.map(p => `
+        <div class="bg-white p-3 rounded-xl border shadow-sm flex items-center justify-between">
+          <div>
+            <h4 class="font-bold text-xs text-gray-900">${p.title || p.name}</h4>
+            <p class="text-[10px] text-gray-500">${p.unitType === 'packet' ? '₹' + (p.pricePerUnit || p.price) + ' / packet' : '₹' + (p.pricePerKg || p.price) + ' / kg'}</p>
+          </div>
+          <button type="button" onclick="deleteProduct('${p.id}')" class="text-red-500 hover:text-red-700 p-1 transition"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+        </div>
+      `).join('');
+      lucide.createIcons();
+    }
+
+    async function updateOrderStatus(id, status) {
+      const ord = orders.find(o => String(o.id) === String(id));
+      if (ord) {
+        ord.status = status;
+        saveData();
+        loadSellerDashboard();
+        if (currentUser && currentUser.role === 'customer') loadCustomerOrders();
+        try {
+          await db.collection("orders").doc(String(id)).update({ status: status });
+        } catch (e) {
+          console.error("Order status cloud sync:", e);
+        }
+      }
+    }
+
+    async function toggleShopStatus() {
+      if (!currentUser) return;
+      const s = shops.find(x => String(x.id) === String(currentUser.shopId) || String(x.ownerId) === String(currentUser.id));
+      if (s) {
+        s.isOpen = !s.isOpen;
+        saveData();
+        updateShopToggleUI(s.isOpen);
+        renderProducts(products);
+        try {
+          await db.collection("shops").doc(String(s.id)).update({ isOpen: s.isOpen });
+        } catch (e) {
+          console.error("Shop toggle cloud sync:", e);
+        }
+      }
+    }
+
+    function updateShopToggleUI(isOpen) {
+      const text = document.getElementById('shopStatusText');
+      const btn = document.getElementById('shopToggleBtn');
+      const circle = document.getElementById('shopToggleCircle');
+      if (isOpen) {
+        text.innerText = 'Dukaan Khuli Hai (Till 6 PM)';
+        btn.className = 'relative inline-flex h-6 w-11 items-center rounded-full bg-green-500 transition';
+        circle.className = 'inline-block h-4 w-4 transform rounded-full bg-white transition translate-x-6';
+      } else {
+        text.innerText = 'Dukaan Band Hai';
+        btn.className = 'relative inline-flex h-6 w-11 items-center rounded-full bg-gray-400 transition';
+        circle.className = 'inline-block h-4 w-4 transform rounded-full bg-white transition translate-x-1';
+      }
+    }
+
+    async function deleteProduct(id) {
+      if (!confirm('Item delete karna chahte hain?')) return;
+      products = products.filter(p => String(p.id) !== String(id));
+      saveData();
+      loadSellerDashboard();
+      renderProducts(products);
+      try {
+        await db.collection("products").doc(String(id)).delete();
+      } catch (e) {
+        console.error("Product delete cloud sync:", e);
+      }
+    }
+
+    function handleProductSubmit(e) {
+      e.preventDefault();
+      if (!currentUser || !currentUser.shopId) return;
+
+      const title = document.getElementById('pTitle').value;
+      const unitType = document.getElementById('pUnitType').value;
+      const price = parseFloat(document.getElementById('pPrice').value);
+      const desc = document.getElementById('pDesc').value;
+      const files = document.getElementById('pImages').files;
+
+      if (files.length > 4) return alert('Maximum 4 photos hi select kar sakte hain.');
+
+      const uploadedImages = [];
+      const processFiles = async () => {
+        const newProd = {
+          id: 'p-' + Date.now(),
+          shopId: String(currentUser.shopId),
+          title,
+          description: desc,
+          unitType,
+          pricePerUnit: unitType === 'packet' ? price : null,
+          pricePerKg: unitType === 'weight' ? price : null,
+          images: uploadedImages.length ? uploadedImages : ['https://via.placeholder.com/300?text=' + encodeURIComponent(title)]
+        };
+
+        products.push(newProd);
+        saveData();
+        closeAddProductModal();
+        loadSellerDashboard();
+        renderProducts(products);
+
+        try {
+          await db.collection("products").doc(newProd.id).set(newProd);
+        } catch (err) {
+          console.error("Product add cloud sync:", err);
+        }
+
+        alert('Naya item dukaan me jud gaya!');
+      };
+
+      if (files.length > 0) {
+        let loaded = 0;
+        for (let i = 0; i < files.length; i++) {
+          const reader = new FileReader();
+          reader.onload = (ev) => {
+            uploadedImages.push(ev.target.result);
+            loaded++;
+            if (loaded === files.length) processFiles();
+          };
+          reader.readAsDataURL(files[i]);
+        }
+      } else {
+        processFiles();
+      }
+    }
+
+    function updateAuthUI() {
+      const nav = document.getElementById('headerAuthNav');
+      const sellerTab = document.getElementById('sellerTabBtn');
+
+      if (currentUser) {
+        nav.innerHTML = `
+          <button onclick="navigateTab('account')" class="flex items-center gap-1.5 bg-orange-700/60 pl-1.5 pr-2.5 py-1 rounded-full text-xs font-bold hover:bg-orange-700 transition">
+            <img src="${currentUser.profilePic}" class="w-5 h-5 rounded-full object-cover border border-white" />
+            <span>${currentUser.name.split(' ')[0]}</span>
+          </button>
+        `;
+        if (currentUser.role === 'shopkeeper') sellerTab.classList.remove('hidden');
+        else sellerTab.classList.add('hidden');
+      } else {
+        nav.innerHTML = `
+          <button onclick="openAuthModal()" class="bg-white text-brand-deepOrange px-3 py-1 rounded-full font-bold text-xs shadow hover:bg-yellow-100 transition">
+            Login / Register
+          </button>
+        `;
+        sellerTab.classList.add('hidden');
+      }
+      lucide.createIcons();
+    }
+
+    function switchAuthTab(type) {
+      if (type === 'login') {
+        document.getElementById('loginForm').classList.remove('hidden');
+        document.getElementById('registerForm').classList.add('hidden');
+        document.getElementById('authTabLogin').className = 'pb-2 px-4 font-bold text-xs border-b-2 border-brand-orange text-brand-orange';
+        document.getElementById('authTabRegister').className = 'pb-2 px-4 font-bold text-xs text-gray-400 border-b-2 border-transparent';
+      } else {
+        document.getElementById('loginForm').classList.add('hidden');
+        document.getElementById('registerForm').classList.remove('hidden');
+        document.getElementById('authTabRegister').className = 'pb-2 px-4 font-bold text-xs border-b-2 border-brand-orange text-brand-orange';
+        document.getElementById('authTabLogin').className = 'pb-2 px-4 font-bold text-xs text-gray-400 border-b-2 border-transparent';
+      }
+    }
+
+    function toggleShopRegisterField() {
+      const role = document.getElementById('regRole').value;
+      const f = document.getElementById('regShopNameField');
+      if (role === 'shopkeeper') f.classList.remove('hidden');
+      else f.classList.add('hidden');
+    }
+
+    function handleLogin(e) {
+      e.preventDefault();
+      const phone = document.getElementById('loginPhone').value.trim();
+      const u = users.find(x => x.phone === phone);
+      if (!u) return alert('Yeh phone number registered nahi hai.');
+
+      currentUser = u;
+      saveData();
+      closeAuthModal();
+      updateAuthUI();
+      navigateTab('home');
+    }
+
+    function handleRegister(e) {
+      e.preventDefault();
+      const file = document.getElementById('regProfilePic').files[0];
+      if (!file) return alert('Profile photo lagana anivarya (mandatory) hai!');
+
+      const phone = document.getElementById('regPhone').value.trim();
+      if (users.find(u => u.phone === phone)) return alert('Yeh number pehle se registered hai.');
+
+      const role = document.getElementById('regRole').value;
+      const name = document.getElementById('regName').value;
+      const email = document.getElementById('regEmail').value;
+      const address = document.getElementById('regAddress').value;
+      const shopName = document.getElementById('regShopName').value;
+
+      const reader = new FileReader();
+      reader.onload = async function(evt) {
+        const profilePicUrl = evt.target.result;
+        const userId = 'usr-' + Date.now();
+        let shopId = null;
+
+        if (role === 'shopkeeper') {
+          if (!shopName) return alert('Dukan ka naam likhein.');
+          shopId = 'shop-' + Date.now();
+          const newShop = {
+            id: String(shopId),
+            ownerId: userId,
+            shopName,
+            phone,
+            address,
+            isOpen: true
+          };
+          shops.push(newShop);
+          try {
+            await db.collection("shops").doc(String(shopId)).set(newShop);
+          } catch(err) { console.error(err); }
+        }
+
+        const newUser = { id: userId, name, phone, email, address, profilePic: profilePicUrl, role, shopId: (shopId ? String(shopId) : null) };
+        users.push(newUser);
+        currentUser = newUser;
+
+        saveData();
+        try {
+          await db.collection("users").doc(userId).set(newUser);
+        } catch(err) { console.error(err); }
+
+        closeAuthModal();
+        updateAuthUI();
+        renderShops(shops);
+        renderProducts(products);
+        navigateTab('home');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function populateAccount() {
+      if (!currentUser) return;
+      document.getElementById('accAvatar').src = currentUser.profilePic;
+      document.getElementById('accName').innerText = currentUser.name;
+      document.getElementById('accPhone').innerText = currentUser.phone;
+      document.getElementById('accRoleBadge').innerText = currentUser.role;
+      document.getElementById('accEditName').value = currentUser.name;
+      document.getElementById('accEditEmail').value = currentUser.email || '';
+      document.getElementById('accEditAddress').value = currentUser.address || '';
+    }
+
+    async function handleProfileUpdate(e) {
+      e.preventDefault();
+      currentUser.name = document.getElementById('accEditName').value;
+      currentUser.email = document.getElementById('accEditEmail').value;
+      currentUser.address = document.getElementById('accEditAddress').value;
+
+      const idx = users.findIndex(u => u.id === currentUser.id);
+      if (idx !== -1) users[idx] = currentUser;
+
+      saveData();
+      try {
+        await db.collection("users").doc(String(currentUser.id)).update({
+          name: currentUser.name,
+          email: currentUser.email,
+          address: currentUser.address
+        });
+      } catch (err) { console.error(err); }
+
+      populateAccount();
+      alert('Profile update ho gayi!');
+    }
+
+    function handleLogout() {
+      currentUser = null;
+      saveData();
+      updateAuthUI();
+      navigateTab('home');
+    }
+
+    // ================= ADMIN COCKPIT & BANNER COMMERCIAL ENGINE =================
+    function openAdminModal() { document.getElementById('adminModal').classList.remove('hidden'); }
+    function closeAdminModal() { document.getElementById('adminModal').classList.add('hidden'); }
+
+    function verifyAdmin(e) {
+      e.preventDefault();
+      const pwd = document.getElementById('adminPasswordInput').value;
+      if (pwd === 'shailesh2005') {
+        adminToken = true;
+        document.getElementById('adminPinSection').classList.add('hidden');
+        document.getElementById('adminControlSection').classList.remove('hidden');
+        renderAdminDashboard();
+        applyMaintenanceView();
+      } else {
+        alert('Galat Admin Password!');
+      }
+    }
+
+    function updateBannerCalculatedCost() {
+      const days = parseInt(document.getElementById('adBannerDays').value, 10) || 1;
+      const cost = days * 300;
+      document.getElementById('adBannerCostDisplay').innerText = `₹${cost} (${days} Din)`;
+    }
+
+    function renderAdminDashboard() {
+      const deliveredOrders = orders.filter(o => o.status === 'delivered');
+      const totalSales = deliveredOrders.reduce((sum, o) => sum + Number(o.totalAmount || 0), 0);
+      const totalAdminCut = deliveredOrders.reduce((sum, o) => {
+        const fee = (o.adminFee !== undefined) 
+          ? Number(o.adminFee) 
+          : (o.totalAmount >= 150 ? Number(o.totalAmount * 0.02) : 0);
+        return sum + fee;
+      }, 0);
+
+      const totalAdRevenue = adBanners.reduce((sum, b) => sum + Number(b.totalCharge || 0), 0);
+
+      const elRev = document.getElementById('kpiTotalRevenue');
+      if (elRev) elRev.innerText = '₹' + totalSales;
+
+      const elAdm = document.getElementById('kpiAdminEarnings');
+      if (elAdm) elAdm.innerText = '₹' + totalAdminCut.toFixed(2);
+
+      const elAdRev = document.getElementById('kpiAdEarnings');
+      if (elAdRev) elAdRev.innerText = '₹' + totalAdRevenue;
+
+      const elOrders = document.getElementById('kpiTotalOrders');
+      if (elOrders) elOrders.innerText = orders.length;
+
+      const elShops = document.getElementById('kpiActiveShops');
+      if (elShops) elShops.innerText = shops.filter(s => s.isOpen).length;
+
+      // 1. Customers Table (Strictly unique)
+      const custBody = document.getElementById('admCustomersTableBody');
+      const customersList = mergeUniqueById([], users.filter(u => u.role === 'customer'));
+      if (custBody) {
+        if (!customersList.length) {
+          custBody.innerHTML = '<tr><td colspan="6" class="p-3 text-center text-gray-400">Koi registered customer nahi hai.</td></tr>';
+        } else {
+          custBody.innerHTML = customersList.map(c => `
+            <tr class="hover:bg-gray-50 border-b">
+              <td class="p-2 text-center">
+                <img src="${c.profilePic}" onclick="expandImage('${c.profilePic}')" class="w-8 h-8 rounded-full object-cover border mx-auto cursor-pointer shadow-sm hover:scale-110 transition" title="Bade size me dekhein" />
+              </td>
+              <td class="p-2.5 font-bold text-gray-900">${c.name}</td>
+              <td class="p-2.5 text-gray-600">${c.phone}</td>
+              <td class="p-2.5 text-gray-500">${c.email || 'N/A'}</td>
+              <td class="p-2.5 text-gray-500 max-w-xs truncate">${c.address}</td>
+              <td class="p-2.5 text-center">
+                <button type="button" onclick="admDeleteUser('${c.id}')" class="text-red-500 hover:text-red-700 p-1" title="Delete User">
+                  <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
+              </td>
+            </tr>
+          `).join('');
+        }
+      }
+
+      // 2. Sellers Table & 2% Ledger (FIX DUPLICATE: Strictly de-duplicated by ID)
+      const sellerBody = document.getElementById('admSellersTableBody');
+      const sellersList = mergeUniqueById([], users.filter(u => u.role === 'shopkeeper'));
+      
+      if (sellerBody) {
+        if (!sellersList.length) {
+          sellerBody.innerHTML = '<tr><td colspan="8" class="p-3 text-center text-gray-400">Koi registered dukaandaar nahi hai.</td></tr>';
+        } else {
+          sellerBody.innerHTML = sellersList.map(sel => {
+            const shop = shops.find(s => String(s.ownerId) === String(sel.id) || String(s.id) === String(sel.shopId)) || { shopName: 'Shop', isOpen: false, address: sel.address, id: 'unknown' };
+            const selOrders = orders.filter(o => String(o.shopId) === String(shop.id) && o.status === 'delivered');
+            const sellerTotalSales = selOrders.reduce((s, o) => s + Number(o.totalAmount || 0), 0);
+            const sellerAdminDue = selOrders.reduce((s, o) => {
+              const fee = (o.adminFee !== undefined) 
+                ? Number(o.adminFee) 
+                : (o.totalAmount >= 150 ? Number(o.totalAmount * 0.02) : 0);
+              return s + fee;
+            }, 0);
+
+            return `
+              <tr class="hover:bg-gray-50 border-b">
+                <td class="p-2 text-center">
+                  <img src="${sel.profilePic}" onclick="expandImage('${sel.profilePic}')" class="w-8 h-8 rounded-full object-cover border mx-auto cursor-pointer shadow-sm hover:scale-110 transition" title="Bade size me dekhein" />
+                </td>
+                <td class="p-2.5 font-bold text-brand-orange">${shop.shopName}</td>
+                <td class="p-2.5 font-bold text-gray-900">${sel.name}</td>
+                <td class="p-2.5 text-gray-600">${sel.phone}</td>
+                <td class="p-2.5 font-black text-gray-800">₹${sellerTotalSales}</td>
+                <td class="p-2.5 font-black text-red-600">₹${sellerAdminDue.toFixed(2)}</td>
+                <td class="p-2.5">
+                  <span class="px-2 py-0.5 rounded text-[10px] font-bold ${shop.isOpen ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                    ${shop.isOpen ? 'Open (Till 6 PM)' : 'Closed'}
+                  </span>
+                </td>
+                <td class="p-2.5 text-center">
+                  <button type="button" onclick="admDeleteUser('${sel.id}')" class="text-red-500 hover:text-red-700 p-1" title="Delete Seller">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                  </button>
+                </td>
+              </tr>
+            `;
+          }).join('');
+        }
+      }
+
+      // 3. Master Orders Table
+      const orderBody = document.getElementById('admOrdersTableBody');
+      if (orderBody) {
+        if (!orders.length) {
+          orderBody.innerHTML = '<tr><td colspan="7" class="p-3 text-center text-gray-400">Abhi tak koi order nahi hua.</td></tr>';
+        } else {
+          orderBody.innerHTML = orders.slice().reverse().map(ord => {
+            const shop = shops.find(s => String(s.id) === String(ord.shopId)) || { shopName: 'Shop' };
+            const cut = (ord.adminFee !== undefined) 
+              ? Number(ord.adminFee).toFixed(2)
+              : (ord.totalAmount >= 150 ? (ord.totalAmount * 0.02).toFixed(2) : "0.00");
+
+            return `
+              <tr class="hover:bg-gray-50 border-b">
+                <td class="p-2.5 font-black text-brand-deepOrange">#${ord.pickupCode}</td>
+                <td class="p-2.5 font-bold text-gray-800">${shop.shopName}</td>
+                <td class="p-2.5">${ord.customerName} (${ord.customerPhone})</td>
+                <td class="p-2.5 font-black">₹${ord.totalAmount}</td>
+                <td class="p-2.5 font-black ${Number(cut) > 0 ? 'text-yellow-600' : 'text-green-600'}">
+                  ${Number(cut) > 0 ? '₹' + cut : '₹0'}
+                </td>
+                <td class="p-2.5">
+                  <span class="px-2 py-0.5 rounded text-[9px] font-bold uppercase ${ord.status === 'packed' ? 'bg-blue-100 text-blue-800' : ord.status === 'delivered' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">
+                    ${ord.status}
+                  </span>
+                </td>
+                <td class="p-2.5 text-gray-400 text-[10px]">${ord.createdAt || 'N/A'}</td>
+              </tr>
+            `;
+          }).join('');
+        }
+      }
+
+      renderAdminBannersTable();
+      updateAdminToggleUI();
+      lucide.createIcons();
+    }
+
+    function renderAdminBannersTable() {
+      const shopSel = document.getElementById('adBannerShopRedirect');
+      if (shopSel) {
+        shopSel.innerHTML = '<option value="">None (General Market Promotion)</option>' + 
+          shops.map(s => `<option value="${s.id}">${s.shopName}</option>`).join('');
+      }
+
+      const tbody = document.getElementById('admBannersTableBody');
+      if (!tbody) return;
+
+      if (!adBanners || !adBanners.length) {
+        tbody.innerHTML = '<tr><td colspan="8" class="p-4 text-center text-gray-400">Koi advertisement banner record nahi hai.</td></tr>';
+        return;
+      }
+
+      const now = new Date();
+
+      tbody.innerHTML = adBanners.map(b => {
+        const isExpired = now > new Date(b.endDate);
+
+        let statusBadge = '';
+        if (b.isManuallyHidden) {
+          statusBadge = '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-gray-100 text-gray-700">Hidden By Admin</span>';
+        } else if (isExpired) {
+          statusBadge = '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-red-100 text-red-700">Expired (12 AM)</span>';
+        } else {
+          statusBadge = '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-green-100 text-green-700">Active Live</span>';
+        }
+
+        const startFormatted = new Date(b.startDate).toLocaleDateString();
+        const endFormatted = new Date(b.endDate).toLocaleDateString();
+
+        return `
+          <tr class="hover:bg-gray-50 border-b">
+            <td class="p-2 text-center">
+              <img src="${b.img}" onclick="expandImage('${b.img}')" class="w-12 h-8 rounded-lg object-cover border mx-auto cursor-pointer shadow-sm hover:scale-110 transition" title="Bade size me dekhein" />
+            </td>
+            <td class="p-2.5 font-bold text-gray-900">
+              ${b.sponsor || 'Self Promo'}
+              ${b.phone ? `<p class="text-[10px] text-gray-500 font-normal">📞 ${b.phone}</p>` : ''}
+            </td>
+            <td class="p-2.5 max-w-xs">
+              <p class="font-bold text-gray-800 truncate">${b.title}</p>
+              <p class="text-[10px] text-gray-500 truncate">${b.subtitle || 'No tagline'}</p>
+            </td>
+            <td class="p-2.5 font-bold">${b.days} Din</td>
+            <td class="p-2.5 font-black text-brand-deepOrange">₹${b.totalCharge || (b.days * 300)}</td>
+            <td class="p-2.5 text-[11px] text-gray-600">
+              ${startFormatted} se <b class="text-gray-900">${endFormatted} (12:00 AM)</b>
+            </td>
+            <td class="p-2.5">${statusBadge}</td>
+            <td class="p-2.5 text-center">
+              <div class="flex items-center justify-center gap-1.5">
+                <button type="button" onclick="admToggleBannerHide('${b.id}')" class="p-1 rounded hover:bg-gray-200 text-gray-600" title="${b.isManuallyHidden ? 'Unhide Banner' : 'Hide Banner'}">
+                  <i data-lucide="${b.isManuallyHidden ? 'eye' : 'eye-off'}" class="w-4 h-4"></i>
+                </button>
+                <button type="button" onclick="admStartEditBanner('${b.id}')" class="p-1 rounded hover:bg-orange-100 text-brand-orange" title="Edit Banner Details">
+                  <i data-lucide="edit-3" class="w-4 h-4"></i>
+                </button>
+                <button type="button" onclick="admDeleteBanner('${b.id}')" class="p-1 rounded hover:bg-red-100 text-red-500" title="Delete Banner">
+                  <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+      lucide.createIcons();
+    }
+
+    function handleAdBannerSubmit(e) {
+      e.preventDefault();
+      const editId = document.getElementById('editBannerId').value;
+      const file = document.getElementById('adBannerFile').files[0];
+      const sponsor = document.getElementById('adBannerSponsor').value;
+      const phone = document.getElementById('adBannerPhone').value;
+      const title = document.getElementById('adBannerTitle').value;
+      const subtitle = document.getElementById('adBannerSubtitle').value;
+      const shopId = document.getElementById('adBannerShopRedirect').value;
+      const days = parseInt(document.getElementById('adBannerDays').value, 10) || 1;
+      const totalCharge = days * 300;
+
+      const now = new Date();
+      const startDate = now.toISOString();
+      const end = new Date(now.getFullYear(), now.getMonth(), now.getDate() + days, 23, 59, 59);
+      const endDate = end.toISOString();
+
+      const saveBannerObject = async (imgUrl) => {
+        let finalBannerObj = null;
+        if (editId) {
+          const idx = adBanners.findIndex(b => String(b.id) === String(editId));
+          if (idx !== -1) {
+            adBanners[idx].sponsor = sponsor;
+            adBanners[idx].phone = phone;
+            adBanners[idx].title = title;
+            adBanners[idx].subtitle = subtitle;
+            adBanners[idx].shopId = shopId;
+            adBanners[idx].days = days;
+            adBanners[idx].totalCharge = totalCharge;
+            adBanners[idx].startDate = startDate;
+            adBanners[idx].endDate = endDate;
+            if (imgUrl) adBanners[idx].img = imgUrl;
+            finalBannerObj = adBanners[idx];
+          }
+          alert('Banner details aur expiry schedule update ho gaya!');
+        } else {
+          if (!imgUrl) return alert('Poster image select karein!');
+          const newBannerId = 'ban-' + Date.now();
+          finalBannerObj = {
+            id: newBannerId,
+            sponsor,
+            phone,
+            title,
+            subtitle,
+            img: imgUrl,
+            shopId,
+            days,
+            totalCharge,
+            startDate,
+            endDate,
+            isManuallyHidden: false
+          };
+          adBanners.push(finalBannerObj);
+          alert(`Naya commercial banner publish ho gaya! Kul charge: ₹${totalCharge}`);
+        }
+
+        saveData();
+        if (finalBannerObj) {
+          try {
+            await db.collection("adBanners").doc(String(finalBannerObj.id)).set(finalBannerObj);
+          } catch(err) { console.error(err); }
+        }
+
+        cancelBannerEdit();
+        renderAdminDashboard();
+        initHomeAdCarousel();
+      };
+
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          saveBannerObject(evt.target.result);
+        };
+        reader.readAsDataURL(file);
+      } else {
+        if (!editId) return alert('Banner poster image select karein!');
+        saveBannerObject(null);
+      }
+    }
+
+    function admStartEditBanner(id) {
+      const b = adBanners.find(x => String(x.id) === String(id));
+      if (!b) return;
+
+      document.getElementById('editBannerId').value = b.id;
+      document.getElementById('adBannerSponsor').value = b.sponsor || '';
+      document.getElementById('adBannerPhone').value = b.phone || '';
+      document.getElementById('adBannerTitle').value = b.title || '';
+      document.getElementById('adBannerSubtitle').value = b.subtitle || '';
+      document.getElementById('adBannerShopRedirect').value = b.shopId || '';
+      document.getElementById('adBannerDays').value = b.days || 1;
+      updateBannerCalculatedCost();
+
+      document.getElementById('bannerSubmitBtn').innerHTML = '<i data-lucide="check" class="w-4 h-4"></i> Update Banner Details';
+      document.getElementById('cancelBannerEditBtn').classList.remove('hidden');
+      lucide.createIcons();
+
+      document.getElementById('adBannerForm').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function cancelBannerEdit() {
+      document.getElementById('editBannerId').value = '';
+      document.getElementById('adBannerForm').reset();
+      document.getElementById('adBannerDays').value = 1;
+      updateBannerCalculatedCost();
+      document.getElementById('bannerSubmitBtn').innerHTML = '<i data-lucide="upload-cloud" class="w-4 h-4"></i> Publish Ad & Schedule Expiry';
+      document.getElementById('cancelBannerEditBtn').classList.add('hidden');
+      lucide.createIcons();
+    }
+
+    async function admToggleBannerHide(id) {
+      const b = adBanners.find(x => String(x.id) === String(id));
+      if (!b) return;
+      b.isManuallyHidden = !b.isManuallyHidden;
+      saveData();
+      renderAdminBannersTable();
+      initHomeAdCarousel();
+      try {
+        await db.collection("adBanners").doc(String(id)).update({ isManuallyHidden: b.isManuallyHidden });
+      } catch(err) { console.error(err); }
+    }
+
+    async function admDeleteBanner(bannerId) {
+      if (!confirm('Kya aap sach me is ad banner aur billing record ko delete karna chahte hain?')) return;
+      adBanners = adBanners.filter(b => String(b.id) !== String(bannerId));
+      saveData();
+      renderAdminDashboard();
+      initHomeAdCarousel();
+      try {
+        await db.collection("adBanners").doc(String(bannerId)).delete();
+      } catch(err) { console.error(err); }
+    }
+
+    function exportBannersCSV() {
+      if (!adBanners.length) return alert("Export karne ke liye koi ad banner data nahi hai.");
+
+      let csv = "Banner ID,Sponsor Name,Phone,Title,Subtitle,Days,Total Charge (INR),Start Date,End Date (Midnight),Status\n";
+      adBanners.forEach(b => {
+        const isExpired = new Date() > new Date(b.endDate);
+        const status = b.isManuallyHidden ? "Hidden" : (isExpired ? "Expired" : "Active");
+        csv += `"${b.id}","${b.sponsor || ''}","${b.phone || ''}","${b.title}","${b.subtitle || ''}","${b.days}","${b.totalCharge}","${new Date(b.startDate).toLocaleDateString()}","${new Date(b.endDate).toLocaleDateString()} (12 AM)","${status}"\n`;
+      });
+      downloadCSVFile("ad_banners_ledger.csv", csv);
+    }
+
+    function switchAdminTab(subTab) {
+      ['admSectionUsers', 'admSectionSellers', 'admSectionOrders', 'admSectionBanners', 'admSectionSettings'].forEach(id => {
+        document.getElementById(id).classList.add('hidden');
+      });
+      ['admTabBtnUsers', 'admTabBtnSellers', 'admTabBtnOrders', 'admTabBtnBanners', 'admTabBtnSettings'].forEach(id => {
+        const btn = document.getElementById(id);
+        btn.classList.remove('border-brand-orange', 'text-brand-orange');
+        btn.classList.add('border-transparent');
+      });
+
+      if (subTab === 'users') {
+        document.getElementById('admSectionUsers').classList.remove('hidden');
+        document.getElementById('admTabBtnUsers').classList.add('border-brand-orange', 'text-brand-orange');
+      } else if (subTab === 'sellers') {
+        document.getElementById('admSectionSellers').classList.remove('hidden');
+        document.getElementById('admTabBtnSellers').classList.add('border-brand-orange', 'text-brand-orange');
+      } else if (subTab === 'orders') {
+        document.getElementById('admSectionOrders').classList.remove('hidden');
+        document.getElementById('admTabBtnOrders').classList.add('border-brand-orange', 'text-brand-orange');
+      } else if (subTab === 'banners') {
+        document.getElementById('admSectionBanners').classList.remove('hidden');
+        document.getElementById('admTabBtnBanners').classList.add('border-brand-orange', 'text-brand-orange');
+      } else if (subTab === 'settings') {
+        document.getElementById('admSectionSettings').classList.remove('hidden');
+        document.getElementById('admTabBtnSettings').classList.add('border-brand-orange', 'text-brand-orange');
+      }
+      lucide.createIcons();
+    }
+
+    function downloadCSVFile(filename, csvContent) {
+      const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement("a");
+      const url = URL.createObjectURL(blob);
+      link.setAttribute("href", url);
+      link.setAttribute("download", filename);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function exportCustomersCSV() {
+      const customersList = mergeUniqueById([], users.filter(u => u.role === 'customer'));
+      if (!customersList.length) return alert("Export karne ke liye koi customer data nahi hai.");
+
+      let csv = "Customer ID,Name,Phone,Email,Address\n";
+      customersList.forEach(c => {
+        const cleanAddr = `"${(c.address || '').replace(/"/g, '""')}"`;
+        csv += `"${c.id}","${c.name}","${c.phone}","${c.email || ''}",${cleanAddr}\n`;
+      });
+      downloadCSVFile("customers_data.csv", csv);
+    }
+
+    function exportSellersCSV() {
+      const sellersList = mergeUniqueById([], users.filter(u => u.role === 'shopkeeper'));
+      if (!sellersList.length) return alert("Export karne ke liye koi seller data nahi hai.");
+
+      let csv = "Seller ID,Owner Name,Shop Name,Phone,Email,Shop Address,Total Delivered Sales (INR),Admin Fee Due (2% INR),Shop Status\n";
+      sellersList.forEach(sel => {
+        const shop = shops.find(s => String(s.ownerId) === String(sel.id) || String(s.id) === String(sel.shopId)) || { shopName: 'Shop', isOpen: false, address: sel.address, id: 'unknown' };
+        const selOrders = orders.filter(o => String(o.shopId) === String(shop.id) && o.status === 'delivered');
+        const sellerTotalSales = selOrders.reduce((s, o) => s + Number(o.totalAmount || 0), 0);
+        const sellerAdminDue = selOrders.reduce((s, o) => {
+          const fee = (o.adminFee !== undefined) 
+            ? Number(o.adminFee) 
+            : (o.totalAmount >= 150 ? Number(o.totalAmount * 0.02) : 0);
+          return s + fee;
+        }, 0);
+        const cleanAddr = `"${(shop.address || '').replace(/"/g, '""')}"`;
+
+        csv += `"${sel.id}","${sel.name}","${shop.shopName}","${sel.phone}","${sel.email || ''}",${cleanAddr},"${sellerTotalSales}","${sellerAdminDue.toFixed(2)}","${shop.isOpen ? 'Open' : 'Closed'}"\n`;
+      });
+      downloadCSVFile("sellers_and_commission_data.csv", csv);
+    }
+
+    function exportOrdersCSV() {
+      if (!orders.length) return alert("Export karne ke liye koi order data nahi hai.");
+
+      let csv = "Order ID,Pickup Code,Shop Name,Customer Name,Customer Phone,Customer Address,Items Description,Total Amount (INR),Admin 2% Cut (INR),Status,Date\n";
+      orders.forEach(ord => {
+        const shop = shops.find(s => String(s.id) === String(ord.shopId)) || { shopName: 'Shop' };
+        const itemsTxt = `"${(ord.items.map(i => `${i.title} (${i.weightDesc}) - ₹${i.totalPrice}`).join(' | ')).replace(/"/g, '""')}"`;
+        const cleanAddr = `"${(ord.customerAddress || '').replace(/"/g, '""')}"`;
+        const cut = (ord.adminFee !== undefined) 
+          ? Number(ord.adminFee).toFixed(2)
+          : (ord.totalAmount >= 150 ? (ord.totalAmount * 0.02).toFixed(2) : "0.00");
+
+        csv += `"${ord.id}","${ord.pickupCode}","${shop.shopName}","${ord.customerName}","${ord.customerPhone}",${cleanAddr},${itemsTxt},"${ord.totalAmount}","${cut}","${ord.status}","${ord.createdAt || ''}"\n`;
+      });
+      downloadCSVFile("orders_ledger_data.csv", csv);
+    }
+
+    function exportAllCSV() {
+      if (!orders.length && !users.length) return alert("Koi data uplabdh nahi hai.");
+      
+      let fullCSV = "=== BHALLEGAON BAGWAN BAZAAR COMPLETE DATABASE BACKUP ===\n\n";
+
+      fullCSV += "--- ORDERS LEDGER ---\n";
+      fullCSV += "Order ID,Pickup Code,Shop Name,Customer Name,Phone,Address,Items,Total (INR),Admin Fee 2% (INR),Status,Date\n";
+      orders.forEach(ord => {
+        const shop = shops.find(s => String(s.id) === String(ord.shopId)) || { shopName: 'Shop' };
+        const itemsTxt = `"${(ord.items.map(i => `${i.title} (${i.weightDesc})`).join('; ')).replace(/"/g, '""')}"`;
+        const cleanAddr = `"${(ord.customerAddress || '').replace(/"/g, '""')}"`;
+        const cut = (ord.adminFee !== undefined) 
+          ? Number(ord.adminFee).toFixed(2)
+          : (ord.totalAmount >= 150 ? (ord.totalAmount * 0.02).toFixed(2) : "0.00");
+        fullCSV += `"${ord.id}","${ord.pickupCode}","${shop.shopName}","${ord.customerName}","${ord.customerPhone}",${cleanAddr},${itemsTxt},"${ord.totalAmount}","${cut}","${ord.status}","${ord.createdAt || ''}"\n`;
+      });
+
+      fullCSV += "\n--- SELLERS DIRECTORY ---\n";
+      fullCSV += "Seller ID,Owner Name,Shop Name,Phone,Total Sales (INR),Admin Due 2% (INR),Status\n";
+      mergeUniqueById([], users.filter(u => u.role === 'shopkeeper')).forEach(sel => {
+        const shop = shops.find(s => String(s.ownerId) === String(sel.id) || String(s.id) === String(sel.shopId)) || { shopName: 'Shop', isOpen: false, id: 'unknown' };
+        const selOrders = orders.filter(o => String(o.shopId) === String(shop.id) && o.status === 'delivered');
+        const sales = selOrders.reduce((s, o) => s + Number(o.totalAmount || 0), 0);
+        const due = selOrders.reduce((s, o) => {
+          const fee = (o.adminFee !== undefined) 
+            ? Number(o.adminFee) 
+            : (o.totalAmount >= 150 ? Number(o.totalAmount * 0.02) : 0);
+          return s + fee;
+        }, 0);
+        fullCSV += `"${sel.id}","${sel.name}","${shop.shopName}","${sel.phone}","${sales}","${due.toFixed(2)}","${shop.isOpen ? 'Open' : 'Closed'}"\n`;
+      });
+
+      fullCSV += "\n--- CUSTOMERS DIRECTORY ---\n";
+      fullCSV += "Customer ID,Name,Phone,Email,Address\n";
+      mergeUniqueById([], users.filter(u => u.role === 'customer')).forEach(c => {
+        const cleanAddr = `"${(c.address || '').replace(/"/g, '""')}"`;
+        fullCSV += `"${c.id}","${c.name}","${c.phone}","${c.email || ''}",${cleanAddr}\n`;
+      });
+
+      fullCSV += "\n--- AD BANNERS COMMERCIALS (₹300/DAY) ---\n";
+      fullCSV += "Banner ID,Sponsor,Phone,Title,Days,Total (INR),Start Date,End Date\n";
+      adBanners.forEach(b => {
+        fullCSV += `"${b.id}","${b.sponsor || ''}","${b.phone || ''}","${b.title}","${b.days}","${b.totalCharge}","${new Date(b.startDate).toLocaleDateString()}","${new Date(b.endDate).toLocaleDateString()}"\n`;
+      });
+
+      downloadCSVFile(`bhallegaon_bazaar_full_backup_${Date.now()}.csv`, fullCSV);
+    }
+
+    async function admDeleteUser(userId) {
+      if (!confirm('Account delete karna chahte hain?')) return;
+      users = users.filter(u => u.id !== userId);
+      const removedShop = shops.find(s => String(s.ownerId) === String(userId));
+      shops = shops.filter(s => String(s.ownerId) !== String(userId));
+      saveData();
+      renderAdminDashboard();
+      renderShops(shops);
+      renderProducts(products);
+
+      try {
+        await db.collection("users").doc(String(userId)).delete();
+        if (removedShop) await db.collection("shops").doc(String(removedShop.id)).delete();
+      } catch (err) { console.error(err); }
+    }
+
+    function updateAdminToggleUI() {
+      const mBtn = document.getElementById('adminMaintToggleBtn');
+      const mCir = document.getElementById('adminMaintCircle');
+      if (appSettings.maintenanceMode) {
+        if (mBtn) mBtn.className = 'relative inline-flex h-6 w-11 items-center rounded-full bg-red-600 transition';
+        if (mCir) mCir.className = 'inline-block h-4 w-4 transform rounded-full bg-white transition translate-x-6';
+      } else {
+        if (mBtn) mBtn.className = 'relative inline-flex h-6 w-11 items-center rounded-full bg-gray-300 transition';
+        if (mCir) mCir.className = 'inline-block h-4 w-4 transform rounded-full bg-white transition translate-x-1';
+      }
+
+      const pBtn = document.getElementById('adminPhoneToggleBtn');
+      const pCir = document.getElementById('adminPhoneCircle');
+      if (appSettings.showSellerPhone) {
+        if (pBtn) pBtn.className = 'relative inline-flex h-6 w-11 items-center rounded-full bg-green-500 transition';
+        if (pCir) pCir.className = 'inline-block h-4 w-4 transform rounded-full bg-white transition translate-x-6';
+      } else {
+        if (pBtn) pBtn.className = 'relative inline-flex h-6 w-11 items-center rounded-full bg-gray-300 transition';
+        if (pCir) pCir.className = 'inline-block h-4 w-4 transform rounded-full bg-white transition translate-x-1';
+      }
+    }
+
+    async function toggleMaintenanceSetting() {
+      appSettings.maintenanceMode = !appSettings.maintenanceMode;
+      saveData();
+      updateAdminToggleUI();
+      applyMaintenanceView();
+      try {
+        await db.collection("settings").doc("appSettings").set(appSettings);
+      } catch (err) { console.error(err); }
+    }
+
+    async function togglePhoneVisibilitySetting() {
+      appSettings.showSellerPhone = !appSettings.showSellerPhone;
+      saveData();
+      updateAdminToggleUI();
+      renderShops(shops);
+      if (currentUser && currentUser.role === 'customer') loadCustomerOrders();
+      try {
+        await db.collection("settings").doc("appSettings").set(appSettings);
+      } catch (err) { console.error(err); }
+    }
+
+    function logoutAdmin() {
+      adminToken = false;
+      document.getElementById('adminPinSection').classList.remove('hidden');
+      document.getElementById('adminControlSection').classList.add('hidden');
+      document.getElementById('adminPasswordInput').value = '';
+      closeAdminModal();
+      applyMaintenanceView();
+    }
+
+    function openAuthModal() { document.getElementById('authModal').classList.remove('hidden'); }
+    function closeAuthModal() { document.getElementById('authModal').classList.add('hidden'); }
+    function openAddProductModal() { document.getElementById('addProductModal').classList.remove('hidden'); }
+    function closeAddProductModal() { document.getElementById('addProductModal').classList.add('hidden'); }
+  </script>
+</body>
+</html>
