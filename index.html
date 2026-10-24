@@ -174,7 +174,7 @@
             <h3 id="accName" class="font-extrabold text-base text-gray-900">Name</h3>
             <p id="accPhone" class="text-xs text-gray-500">Phone</p>
             <span id="accRoleBadge" class="inline-block mt-1 px-2.5 py-0.5 rounded text-[10px] font-bold uppercase bg-orange-100 text-brand-orange">Role</span>
-            <p class="text-[10px] text-gray-400 mt-1">Camera icon daba kar photo badal sakte hain</p>
+            <p class="text-[10px] text-gray-400 mt-1">Camera icon par tap karke photo badlein</p>
           </div>
         </div>
         <form onsubmit="handleProfileUpdate(event)" class="space-y-3">
@@ -876,7 +876,6 @@
           users = mergeUniqueById([], list);
           localStorage.setItem('bb_users', JSON.stringify(users));
           
-          // Current user profile sync
           if (currentUser) {
             const freshMe = users.find(u => String(u.id) === String(currentUser.id));
             if (freshMe) {
@@ -1544,12 +1543,23 @@
       Promise.all(syncPromises).catch(e => console.error("Cloud push failed:", e));
     }
 
+    // Direct WhatsApp Deep Link Navigation (Bypasses browser popup blocking)
     function sendOrderToWhatsApp(orderId) {
       const ord = orders.find(o => String(o.id) === String(orderId));
-      if (!ord) return;
+      if (!ord) return alert("Order details nahi mili.");
 
-      const shop = shops.find(s => String(s.id) === String(ord.shopId));
-      const shopPhone = shop ? shop.phone : '';
+      const shop = shops.find(s => String(s.id) === String(ord.shopId) || String(s.ownerId) === String(ord.shopId));
+      let rawPhone = shop ? shop.phone : '';
+
+      if (!rawPhone) {
+        const sellerUser = users.find(u => String(u.shopId) === String(ord.shopId) || String(u.id) === String(ord.shopId));
+        if (sellerUser) rawPhone = sellerUser.phone;
+      }
+
+      const cleanPhone = normalizePhone(rawPhone);
+      if (!cleanPhone || cleanPhone.length < 10) {
+        return alert("Dukaan ka mobile number uplabdh nahi hai ya galat darj hai.");
+      }
 
       let text = `*BHALLEGAON - BAGWAN BAZAAR ORDER*\n`;
       text += `📦 *Pickup Security Code:* #${ord.pickupCode}\n`;
@@ -1563,16 +1573,19 @@
       text += `⏰ *Pickup Deadline:* 6:00 PM tak\n`;
       text += `_Kripya samaan pack karke thele par Customer Name aur Code #${ord.pickupCode} likh dein._`;
 
-      const targetPhone = shopPhone ? (shopPhone.startsWith('91') ? shopPhone : '91' + shopPhone) : '';
-      const url = `https://api.whatsapp.com/send?phone=${targetPhone}&text=${encodeURIComponent(text)}`;
-      window.open(url, '_blank');
+      const targetPhone = '91' + cleanPhone;
+      const url = `https://wa.me/${targetPhone}?text=${encodeURIComponent(text)}`;
+      window.location.href = url;
     }
 
     function chatWithCustomerWhatsApp(customerPhone, pickupCode, customerName) {
-      if (!customerPhone) return alert('Phone number uplabdh nahi hai.');
-      const phone = customerPhone.startsWith('91') ? customerPhone : '91' + customerPhone;
+      const cleanPhone = normalizePhone(customerPhone);
+      if (!cleanPhone || cleanPhone.length < 10) return alert('Customer ka phone number sahi nahi hai.');
+
+      const targetPhone = '91' + cleanPhone;
       const text = `Namaste ${customerName} ji! Aapka Bhallegaon Bagwan Bazaar order #${pickupCode} pack ho chuka hai. Kripya shaam 6:00 PM se pehle dukaan se collect kar lein.`;
-      window.open(`https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(text)}`, '_blank');
+      const url = `https://wa.me/${targetPhone}?text=${encodeURIComponent(text)}`;
+      window.location.href = url;
     }
 
     function loadCustomerOrders() {
@@ -1673,7 +1686,6 @@
     function loadSellerDashboard() {
       if (!currentUser || currentUser.role !== 'shopkeeper') return;
 
-      // Find shop by shopId OR ownerId
       let shop = shops.find(s => String(s.id) === String(currentUser.shopId) || String(s.ownerId) === String(currentUser.id));
       if (!shop && currentUser.shopId) {
         shop = { id: String(currentUser.shopId), shopName: 'Dukan Dashboard', address: currentUser.address, isOpen: true };
@@ -1687,7 +1699,6 @@
 
       const activeShopId = shop ? String(shop.id) : String(currentUser.shopId);
 
-      // Match orders accurately
       const shopOrders = orders.filter(o => String(o.shopId) === activeShopId);
       const now = new Date();
       const todayStr = now.toDateString();
@@ -1961,7 +1972,6 @@
       const inputPhone = normalizePhone(document.getElementById('regPhone').value);
       if (inputPhone.length < 10) return alert('Kripya 10-digit sahi mobile number darj karein.');
 
-      // Strict Phone Check
       const existingUser = users.find(u => normalizePhone(u.phone) === inputPhone);
       if (existingUser) {
         return alert('Yeh number pehle se registered hai! Kripya Login karein.');
@@ -2036,7 +2046,7 @@
       document.getElementById('accEditAddress').value = currentUser.address || '';
     }
 
-    // --- NEW FEATURE: CHANGE PROFILE PHOTO FROM BROWSER ---
+    // --- PROFILE PHOTO CHANGE FROM BROWSER ---
     function handleProfilePhotoChange(e) {
       const file = e.target.files[0];
       if (!file || !currentUser) return;
@@ -2046,7 +2056,6 @@
         const newPhotoDataUrl = evt.target.result;
         currentUser.profilePic = newPhotoDataUrl;
 
-        // Local array update
         const idx = users.findIndex(u => String(u.id) === String(currentUser.id));
         if (idx !== -1) users[idx].profilePic = newPhotoDataUrl;
 
@@ -2054,7 +2063,6 @@
         populateAccount();
         updateAuthUI();
 
-        // Cloud Firestore update
         try {
           await db.collection("users").doc(String(currentUser.id)).update({ profilePic: newPhotoDataUrl });
           alert("Profile photo safaltapoorvak update ho gayi!");
